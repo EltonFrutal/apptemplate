@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Empresas{% endblock %}
+{% block topbar_title %}Empresas{% endblock %}
+{% block topbar_right %}
+<button class="btn btn-primary" onclick="novaEmpresa()">+ Nova empresa</button>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por nome ou código...">
+    </div>
+    <button class="btn btn-ghost" onclick="carregar()">↺ Atualizar</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Razão Social</th><th>Fantasia</th><th>Código</th>
+      <th>Cod.Consys</th><th>CNPJ</th><th>Filiais</th><th>Status</th><th></th>
+    </tr></thead>
+    <tbody id="tbody">
+      <tr><td colspan="8"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="overlay" id="modal" onclick="if(event.target===this)fecharModal('modal')">
+  <div class="modal">
+    <div class="modal-title" id="modal-titulo">Nova empresa</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Razão Social *</label>
+        <input type="text" id="f-razao" placeholder="Empresa Ltda">
+      </div>
+      <div class="form-group">
+        <label>Nome Fantasia</label>
+        <input type="text" id="f-fantasia" placeholder="Fantasia">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código *</label>
+        <input type="text" id="f-codigo" placeholder="EMP001">
+      </div>
+      <div class="form-group">
+        <label>Código Consys</label>
+        <input type="text" id="f-consys" placeholder="0101">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>CNPJ</label>
+        <input type="text" id="f-cnpj" placeholder="00.000.000/0001-00">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="contato@empresa.com">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="tel" id="f-telefone" placeholder="(00) 0000-0000">
+      </div>
+      <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+        <label class="check-item"><input type="checkbox" id="f-ativo" checked> Empresa ativa</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let todos=[]
+
+async function carregar(){
+  const tbody=document.getElementById('tbody')
+  tbody.innerHTML='<tr><td colspan="8"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>'
+  const res=await fetch('/api/empresas')
+  todos=await res.json()
+  render(todos)
+}
+
+function render(lista){
+  const tbody=document.getElementById('tbody')
+  if(!lista.length){tbody.innerHTML='<tr><td colspan="8"><div class="state-box"><div class="state-icon">🏢</div><p>Nenhuma empresa encontrada.</p></div></td></tr>';return}
+  tbody.innerHTML=lista.map(e=>`<tr>
+    <td style="font-weight:600">${esc(e.razao_social)}</td>
+    <td>${esc(e.nome_fantasia||'—')}</td>
+    <td class="td-mono">${esc(e.codigo)}</td>
+    <td class="td-mono">${esc(e.codigo_consys||'—')}</td>
+    <td class="td-mono">${esc(e.cnpj||'—')}</td>
+    <td><span class="badge blue">${e.total_filiais} filial(is)</span></td>
+    <td>${e.ativo?'<span class="badge green">ativa</span>':'<span class="badge red">inativa</span>'}</td>
+    <td><div class="td-actions">
+      <button class="btn btn-sm btn-edit" onclick="editar('${e.id}')">editar</button>
+      <button class="btn btn-sm btn-del"  onclick="excluir('${e.id}','${esc(e.razao_social)}')">excluir</button>
+    </div></td>
+  </tr>`).join('')
+}
+
+document.getElementById('search').addEventListener('input',function(){
+  const q=this.value.toLowerCase()
+  render(todos.filter(e=>(e.razao_social||'').toLowerCase().includes(q)||(e.codigo||'').toLowerCase().includes(q)||(e.nome_fantasia||'').toLowerCase().includes(q)))
+})
+
+function novaEmpresa(){
+  document.getElementById('edit-id').value=''
+  ;['f-razao','f-fantasia','f-codigo','f-consys','f-cnpj','f-email','f-telefone'].forEach(id=>document.getElementById(id).value='')
+  document.getElementById('f-ativo').checked=true
+  document.getElementById('modal-titulo').textContent='Nova empresa'
+  abrirModal('modal')
+  setTimeout(()=>document.getElementById('f-razao').focus(),100)
+}
+
+function editar(id){
+  const e=todos.find(x=>x.id===id)
+  if(!e)return
+  document.getElementById('edit-id').value=e.id
+  document.getElementById('f-razao').value=e.razao_social||''
+  document.getElementById('f-fantasia').value=e.nome_fantasia||''
+  document.getElementById('f-codigo').value=e.codigo||''
+  document.getElementById('f-consys').value=e.codigo_consys||''
+  document.getElementById('f-cnpj').value=e.cnpj||''
+  document.getElementById('f-email').value=e.email||''
+  document.getElementById('f-telefone').value=e.telefone||''
+  document.getElementById('f-ativo').checked=e.ativo
+  document.getElementById('modal-titulo').textContent='Editar empresa'
+  abrirModal('modal')
+}
+
+async function salvar(){
+  const id=document.getElementById('edit-id').value
+  const dados={
+    razao_social:document.getElementById('f-razao').value.trim(),
+    nome_fantasia:document.getElementById('f-fantasia').value.trim()||null,
+    codigo:document.getElementById('f-codigo').value.trim(),
+    codigo_consys:document.getElementById('f-consys').value.trim()||null,
+    cnpj:document.getElementById('f-cnpj').value.trim()||null,
+    email:document.getElementById('f-email').value.trim()||null,
+    telefone:document.getElementById('f-telefone').value.trim()||null,
+    ativo:document.getElementById('f-ativo').checked,
+  }
+  if(!dados.razao_social||!dados.codigo){toast('Razão social e código são obrigatórios','error');return}
+  const res=await fetch(id?`/api/empresas/${id}`:'/api/empresas',{
+    method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dados)
+  })
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  fecharModal('modal')
+  toast(id?'Empresa atualizada!':'Empresa cadastrada!')
+  carregar()
+}
+
+async function excluir(id,nome){
+  if(!confirm(`Desativar "${nome}"?`))return
+  const res=await fetch(`/api/empresas/${id}`,{method:'DELETE'})
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  toast('Empresa desativada!')
+  carregar()
+}
+
+carregar()
+</script>
+{% endblock %}

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppTemplate — Clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0c10;
+    --bg2:     #111318;
+    --bg3:     #1a1d24;
+    --border:  #252830;
+    --accent:  #4f7fff;
+    --accent2: #7b9fff;
+    --green:   #2dd98a;
+    --red:     #ff4f6a;
+    --amber:   #ffb547;
+    --text:    #e8eaf0;
+    --text2:   #8890a8;
+    --text3:   #4a5068;
+    --r:       10px;
+    --font:    'Syne', sans-serif;
+    --mono:    'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; font-size:15px; }
+  header { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .logo { font-size:17px; font-weight:700; letter-spacing:-0.5px; }
+  .logo span { color:var(--accent2); }
+  .badge-status { display:flex; align-items:center; gap:6px; background:var(--bg3); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:12px; font-family:var(--mono); color:var(--text2); }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .container { max-width:1100px; margin:0 auto; padding:32px 20px; }
+  .page-title { font-size:24px; font-weight:700; letter-spacing:-0.8px; margin-bottom:4px; }
+  .page-subtitle { color:var(--text3); font-size:13px; font-family:var(--mono); margin-bottom:28px; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
+  .stat { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:20px 22px; position:relative; overflow:hidden; }
+  .stat::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .stat.blue::before  { background:var(--accent); }
+  .stat.green::before { background:var(--green); }
+  .stat.amber::before { background:var(--amber); }
+  .stat-label { font-size:11px; color:var(--text3); font-family:var(--mono); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+  .stat-value { font-size:32px; font-weight:700; letter-spacing:-1.5px; }
+  .stat.blue  .stat-value { color:var(--accent2); }
+  .stat.green .stat-value { color:var(--green); }
+  .stat.amber .stat-value { color:var(--amber); }
+  .toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .search-wrap { flex:1; min-width:220px; position:relative; }
+  .search-wrap input { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:10px 14px 10px 40px; color:var(--text); font-family:var(--font); font-size:14px; outline:none; transition:border-color .2s; }
+  .search-wrap input:focus { border-color:var(--accent); }
+  .search-wrap input::placeholder { color:var(--text3); }
+  .search-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:16px; pointer-events:none; }
+  .btn { display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:var(--r); font-family:var(--font); font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:#3d6ee8; transform:translateY(-1px); }
+  .btn-ghost { background:var(--bg2); color:var(--text2); border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--text); }
+  .btn-sm { padding:5px 12px; font-size:12px; font-weight:500; border-radius:6px; }
+  .btn-edit { background:transparent; color:var(--text2); border:1px solid var(--border); }
+  .btn-edit:hover { border-color:var(--accent2); color:var(--accent2); }
+  .btn-del { background:transparent; color:var(--text3); border:1px solid transparent; }
+  .btn-del:hover { border-color:var(--red); color:var(--red); }
+  .table-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+  table { width:100%; border-collapse:collapse; }
+  thead { background:var(--bg3); border-bottom:1px solid var(--border); }
+  th { padding:12px 18px; text-align:left; font-size:11px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; font-family:var(--mono); }
+  td { padding:14px 18px; border-bottom:1px solid var(--border); font-size:14px; }
+  tr:last-child td { border-bottom:none; }
+  tbody tr { transition:background .1s; }
+  tbody tr:hover td { background:rgba(79,127,255,.04); }
+  .td-nome { font-weight:600; }
+  .td-email { color:var(--text2); font-family:var(--mono); font-size:12px; }
+  .td-cidade { display:inline-block; background:var(--bg3); border:1px solid var(--border); border-radius:20px; padding:3px 10px; font-size:12px; color:var(--text2); font-family:var(--mono); }
+  .td-date { color:var(--text3); font-size:12px; font-family:var(--mono); }
+  .td-actions { display:flex; gap:6px; }
+  .state-box { text-align:center; padding:60px 20px; color:var(--text3); }
+  .state-icon { font-size:32px; margin-bottom:12px; opacity:.4; }
+  .state-box p { font-size:14px; font-family:var(--mono); }
+  @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+  .loading-text { animation:blink 1.2s infinite; }
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; padding:20px; }
+  .overlay.open { display:flex; }
+  .modal { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:30px; width:100%; max-width:500px; animation:slideUp .2s ease; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .modal-title { font-size:18px; font-weight:700; letter-spacing:-0.5px; margin-bottom:24px; }
+  .form-group { margin-bottom:16px; }
+  label { display:block; font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; font-family:var(--mono); margin-bottom:7px; }
+  input[type=text], input[type=email], input[type=tel] { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-family:var(--font); font-size:14px; outline:none; transition:border-color .2s; }
+  input:focus { border-color:var(--accent); }
+  input::placeholder { color:var(--text3); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:26px; padding-top:22px; border-top:1px solid var(--border); }
+  .toast { position:fixed; bottom:28px; right:28px; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:13px 20px; font-size:13px; font-family:var(--mono); display:flex; align-items:center; gap:10px; z-index:999; transform:translateY(80px); opacity:0; transition:all .25s ease; }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.success { border-color:var(--green); color:var(--green); }
+  .toast.error   { border-color:var(--red);   color:var(--red); }
+  @media(max-width:640px) {
+    .stats { grid-template-columns:1fr 1fr; }
+    .stats .stat:last-child { grid-column:span 2; }
+    th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4) { display:none; }
+    .form-row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">app<span>template</span></div>
+  <div class="badge-status"><div class="dot"></div>PostgreSQL conectado</div>
+</header>
+
+<div class="container">
+  <div class="page-title">Clientes</div>
+  <div class="page-subtitle">cadastro · consulta · gestão</div>
+
+  <div class="stats">
+    <div class="stat blue"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">—</div></div>
+    <div class="stat green"><div class="stat-label">Este mês</div><div class="stat-value" id="stat-mes">—</div></div>
+    <div class="stat amber"><div class="stat-label">Cidades</div><div class="stat-value" id="stat-cidades">—</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por nome, email ou cidade...">
+    </div>
+    <button class="btn btn-ghost" onclick="carregar()">↺ Atualizar</button>
+    <button class="btn btn-primary" onclick="abrirModal()">+ Novo cliente</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th><th>Email</th><th>Telefone</th><th>Cidade</th><th>Cadastro</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="6"><div class="state-box"><div class="state-icon">⟳</div><p class="loading-text">carregando...</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="fecharFora(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-titulo">Novo cliente</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label>Nome *</label>
+      <input type="text" id="f-nome" placeholder="Nome completo">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="email@exemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="tel" id="f-telefone" placeholder="(00) 00000-0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Cidade</label>
+      <input type="text" id="f-cidade" placeholder="Cidade">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar cliente</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let todos = []
+
+  async function carregar() {
+    const tbody = document.getElementById('tbody')
+    tbody.innerHTML = `<tr><td colspan="6"><div class="state-box"><div class="state-icon">⟳</div><p class="loading-text">carregando...</p></div></td></tr>`
+    try {
+      const res = await fetch('/api/clientes')
+      todos = await res.json()
+      atualizarStats()
+      renderTabela(todos)
+    } catch(e) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="state-box"><div class="state-icon">⚠</div><p>Erro ao conectar com o servidor.</p></div></td></tr>`
+      toast('Erro ao conectar com o servidor', 'error')
+    }
+  }
+
+  function renderTabela(lista) {
+    const tbody = document.getElementById('tbody')
+    if (!lista.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="state-box"><div class="state-icon">☰</div><p>Nenhum cliente encontrado.</p></div></td></tr>`
+      return
+    }
+    tbody.innerHTML = lista.map(c => `
+      <tr>
+        <td class="td-nome">${esc(c.nome)}</td>
+        <td class="td-email">${esc(c.email||'—')}</td>
+        <td>${esc(c.telefone||'—')}</td>
+        <td>${c.cidade?`<span class="td-cidade">${esc(c.cidade)}</span>`:'—'}</td>
+        <td class="td-date">${formatarData(c.criado_em)}</td>
+        <td><div class="td-actions">
+          <button class="btn btn-sm btn-edit" onclick="editar('${c.id}')">editar</button>
+          <button class="btn btn-sm btn-del" onclick="excluir('${c.id}','${esc(c.nome)}')">excluir</button>
+        </div></td>
+      </tr>`).join('')
+  }
+
+  function atualizarStats() {
+    document.getElementById('stat-total').textContent = todos.length
+    const agora = new Date()
+    const mes = todos.filter(c => {
+      const d = new Date(c.criado_em)
+      return d.getMonth()===agora.getMonth() && d.getFullYear()===agora.getFullYear()
+    }).length
+    document.getElementById('stat-mes').textContent = mes
+    const cidades = new Set(todos.map(c=>c.cidade).filter(Boolean)).size
+    document.getElementById('stat-cidades').textContent = cidades
+  }
+
+  document.getElementById('search').addEventListener('input', function() {
+    const q = this.value.toLowerCase()
+    renderTabela(todos.filter(c =>
+      (c.nome||'').toLowerCase().includes(q) ||
+      (c.email||'').toLowerCase().includes(q) ||
+      (c.cidade||'').toLowerCase().includes(q)
+    ))
+  })
+
+  function abrirModal(c=null) {
+    document.getElementById('overlay').classList.add('open')
+    document.getElementById('edit-id').value=''
+    document.getElementById('f-nome').value=''
+    document.getElementById('f-email').value=''
+    document.getElementById('f-telefone').value=''
+    document.getElementById('f-cidade').value=''
+    document.getElementById('modal-titulo').textContent='Novo cliente'
+    if(c) {
+      document.getElementById('modal-titulo').textContent='Editar cliente'
+      document.getElementById('edit-id').value=c.id
+      document.getElementById('f-nome').value=c.nome||''
+      document.getElementById('f-email').value=c.email||''
+      document.getElementById('f-telefone').value=c.telefone||''
+      document.getElementById('f-cidade').value=c.cidade||''
+    }
+    setTimeout(()=>document.getElementById('f-nome').focus(),100)
+  }
+
+  function fecharModal() { document.getElementById('overlay').classList.remove('open') }
+  function fecharFora(e) { if(e.target===document.getElementById('overlay')) fecharModal() }
+
+  async function salvar() {
+    const id = document.getElementById('edit-id').value
+    const nome = document.getElementById('f-nome').value.trim()
+    if(!nome) { toast('Nome é obrigatório','error'); return }
+    const dados = {
+      nome,
+      email:    document.getElementById('f-email').value.trim()||null,
+      telefone: document.getElementById('f-telefone').value.trim()||null,
+      cidade:   document.getElementById('f-cidade').value.trim()||null,
+    }
+    try {
+      await fetch(id?`/api/clientes/${id}`:'/api/clientes', {
+        method: id?'PUT':'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(dados)
+      })
+      fecharModal()
+      toast(id?'Cliente atualizado!':'Cliente cadastrado!','success')
+      carregar()
+    } catch(e) { toast('Erro ao salvar','error') }
+  }
+
+  function editar(id) { const c=todos.find(x=>x.id===id); if(c) abrirModal(c) }
+
+  async function excluir(id,nome) {
+    if(!confirm(`Excluir "${nome}"?`)) return
+    try {
+      await fetch(`/api/clientes/${id}`,{method:'DELETE'})
+      toast('Cliente excluído','success')
+      carregar()
+    } catch(e) { toast('Erro ao excluir','error') }
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+  function formatarData(iso) { if(!iso) return '—'; return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) }
+
+  let toastTimer
+  function toast(msg,tipo='success') {
+    const el=document.getElementById('toast')
+    el.textContent=(tipo==='success'?'✓  ':'✕  ')+msg
+    el.className='toast '+tipo+' show'
+    clearTimeout(toastTimer)
+    toastTimer=setTimeout(()=>el.classList.remove('show'),3000)
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape') fecharModal()
+    if(e.key==='Enter'&&document.getElementById('overlay').classList.contains('open')) salvar()
+  })
+
+  carregar()
+</script>
+</body>
+</html>

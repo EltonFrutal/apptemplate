@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats">
+  <div class="stat blue">
+    <div class="stat-label">Usuários</div>
+    <div class="stat-value">{{ total_usuarios }}</div>
+  </div>
+  <div class="stat green">
+    <div class="stat-label">Empresas</div>
+    <div class="stat-value">{{ total_empresas }}</div>
+  </div>
+  <div class="stat amber">
+    <div class="stat-label">Filiais</div>
+    <div class="stat-value">{{ total_filiais }}</div>
+  </div>
+  <div class="stat purple">
+    <div class="stat-label">Módulos</div>
+    <div class="stat-value">{{ total_modulos }}</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+  <a href="/usuarios"   style="text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow2)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+    <span style="font-size:28px">👤</span>
+    <div><div style="font-weight:700;font-size:14px;color:var(--text)">Usuários</div><div style="font-size:12px;color:var(--text3)">Cadastro e acesso</div></div>
+  </a>
+  <a href="/empresas"   style="text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow2)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+    <span style="font-size:28px">🏢</span>
+    <div><div style="font-weight:700;font-size:14px;color:var(--text)">Empresas</div><div style="font-size:12px;color:var(--text3)">Clientes do sistema</div></div>
+  </a>
+  <a href="/filiais"    style="text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow2)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+    <span style="font-size:28px">🏬</span>
+    <div><div style="font-weight:700;font-size:14px;color:var(--text)">Filiais</div><div style="font-size:12px;color:var(--text3)">Unidades por empresa</div></div>
+  </a>
+  <a href="/modulos"    style="text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow2)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+    <span style="font-size:28px">⚡</span>
+    <div><div style="font-weight:700;font-size:14px;color:var(--text)">Módulos</div><div style="font-size:12px;color:var(--text3)">Funcionalidades dos apps</div></div>
+  </a>
+  <a href="/permissoes" style="text-decoration:none;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow2)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--shadow)'">
+    <span style="font-size:28px">🔐</span>
+    <div><div style="font-weight:700;font-size:14px;color:var(--text)">Permissões</div><div style="font-size:12px;color:var(--text3)">Controle de acesso</div></div>
+  </a>
+</div>
+{% endblock %}

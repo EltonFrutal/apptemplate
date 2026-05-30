@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Filiais{% endblock %}
+{% block topbar_title %}Filiais{% endblock %}
+{% block topbar_right %}
+<button class="btn btn-primary" onclick="novaFilial()">+ Nova filial</button>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por nome, cidade ou código...">
+    </div>
+    <select id="filtro-empresa" onchange="carregar()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:14px;color:var(--text);outline:none;">
+      <option value="">Todas as empresas</option>
+      {% for e in empresas %}
+      <option value="{{ e.id }}">{{ e.nome_fantasia or e.razao_social }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-ghost" onclick="carregar()">↺ Atualizar</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Empresa</th><th>Nome</th><th>Código</th>
+      <th>Cod.Consys</th><th>Cidade/UF</th><th>Tipo</th><th>Status</th><th></th>
+    </tr></thead>
+    <tbody id="tbody">
+      <tr><td colspan="8"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="overlay" id="modal" onclick="if(event.target===this)fecharModal('modal')">
+  <div class="modal">
+    <div class="modal-title" id="modal-titulo">Nova filial</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Empresa *</label>
+        <select id="f-empresa">
+          <option value="">Selecione...</option>
+          {% for e in empresas %}
+          <option value="{{ e.id }}">{{ e.nome_fantasia or e.razao_social }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" id="f-nome" placeholder="Matriz SP">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código</label>
+        <input type="text" id="f-codigo" placeholder="FIL001">
+      </div>
+      <div class="form-group">
+        <label>Código Consys</label>
+        <input type="text" id="f-consys" placeholder="010101">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>CNPJ</label>
+        <input type="text" id="f-cnpj" placeholder="00.000.000/0001-00">
+      </div>
+      <div class="form-group">
+        <label>Endereço</label>
+        <input type="text" id="f-endereco" placeholder="Rua, número">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>Cidade</label>
+        <input type="text" id="f-cidade" placeholder="São Paulo">
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="f-estado">
+          <option value="">UF</option>
+          <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+          <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+          <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+          <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+          <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+          <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+          <option>SP</option><option>SE</option><option>TO</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;gap:8px;">
+        <label class="check-item"><input type="checkbox" id="f-matriz"> É a matriz</label>
+        <label class="check-item"><input type="checkbox" id="f-ativo" checked> Ativa</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let todos=[]
+
+async function carregar(){
+  const eid=document.getElementById('filtro-empresa').value
+  const url=eid?`/api/filiais?empresa_id=${eid}`:'/api/filiais'
+  const tbody=document.getElementById('tbody')
+  tbody.innerHTML='<tr><td colspan="8"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>'
+  const res=await fetch(url)
+  todos=await res.json()
+  render(todos)
+}
+
+function render(lista){
+  const tbody=document.getElementById('tbody')
+  if(!lista.length){tbody.innerHTML='<tr><td colspan="8"><div class="state-box"><div class="state-icon">🏬</div><p>Nenhuma filial encontrada.</p></div></td></tr>';return}
+  tbody.innerHTML=lista.map(f=>`<tr>
+    <td style="font-size:13px;color:var(--text2)">${esc(f.empresa_nome||'—')}</td>
+    <td style="font-weight:600">${esc(f.nome)}</td>
+    <td class="td-mono">${esc(f.codigo||'—')}</td>
+    <td class="td-mono">${esc(f.codigo_consys||'—')}</td>
+    <td class="td-mono">${esc(f.cidade||'—')}${f.estado?' / '+esc(f.estado):''}</td>
+    <td>${f.is_matriz?'<span class="badge blue">Matriz</span>':'<span class="badge gray">Filial</span>'}</td>
+    <td>${f.ativo?'<span class="badge green">ativa</span>':'<span class="badge red">inativa</span>'}</td>
+    <td><div class="td-actions">
+      <button class="btn btn-sm btn-edit" onclick="editar('${f.id}')">editar</button>
+      <button class="btn btn-sm btn-del"  onclick="excluir('${f.id}','${esc(f.nome)}')">excluir</button>
+    </div></td>
+  </tr>`).join('')
+}
+
+document.getElementById('search').addEventListener('input',function(){
+  const q=this.value.toLowerCase()
+  render(todos.filter(f=>(f.nome||'').toLowerCase().includes(q)||(f.cidade||'').toLowerCase().includes(q)||(f.codigo||'').toLowerCase().includes(q)))
+})
+
+function novaFilial(){
+  document.getElementById('edit-id').value=''
+  document.getElementById('f-empresa').value=''
+  ;['f-nome','f-codigo','f-consys','f-cnpj','f-endereco','f-cidade'].forEach(id=>document.getElementById(id).value='')
+  document.getElementById('f-estado').value=''
+  document.getElementById('f-matriz').checked=false
+  document.getElementById('f-ativo').checked=true
+  document.getElementById('modal-titulo').textContent='Nova filial'
+  abrirModal('modal')
+  setTimeout(()=>document.getElementById('f-nome').focus(),100)
+}
+
+function editar(id){
+  const f=todos.find(x=>x.id===id)
+  if(!f)return
+  document.getElementById('edit-id').value=f.id
+  document.getElementById('f-empresa').value=f.empresa_id||''
+  document.getElementById('f-nome').value=f.nome||''
+  document.getElementById('f-codigo').value=f.codigo||''
+  document.getElementById('f-consys').value=f.codigo_consys||''
+  document.getElementById('f-cnpj').value=f.cnpj||''
+  document.getElementById('f-endereco').value=f.endereco||''
+  document.getElementById('f-cidade').value=f.cidade||''
+  document.getElementById('f-estado').value=f.estado||''
+  document.getElementById('f-matriz').checked=f.is_matriz
+  document.getElementById('f-ativo').checked=f.ativo
+  document.getElementById('modal-titulo').textContent='Editar filial'
+  abrirModal('modal')
+}
+
+async function salvar(){
+  const id=document.getElementById('edit-id').value
+  const dados={
+    empresa_id:document.getElementById('f-empresa').value,
+    nome:document.getElementById('f-nome').value.trim(),
+    codigo:document.getElementById('f-codigo').value.trim()||null,
+    codigo_consys:document.getElementById('f-consys').value.trim()||null,
+    cnpj:document.getElementById('f-cnpj').value.trim()||null,
+    endereco:document.getElementById('f-endereco').value.trim()||null,
+    cidade:document.getElementById('f-cidade').value.trim()||null,
+    estado:document.getElementById('f-estado').value||null,
+    is_matriz:document.getElementById('f-matriz').checked,
+    ativo:document.getElementById('f-ativo').checked,
+  }
+  if(!dados.empresa_id||!dados.nome){toast('Empresa e nome são obrigatórios','error');return}
+  const res=await fetch(id?`/api/filiais/${id}`:'/api/filiais',{
+    method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dados)
+  })
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  fecharModal('modal')
+  toast(id?'Filial atualizada!':'Filial cadastrada!')
+  carregar()
+}
+
+async function excluir(id,nome){
+  if(!confirm(`Desativar "${nome}"?`))return
+  const res=await fetch(`/api/filiais/${id}`,{method:'DELETE'})
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  toast('Filial desativada!')
+  carregar()
+}
+
+carregar()
+</script>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Permissões{% endblock %}
+{% block topbar_title %}Permissões{% endblock %}
+{% block topbar_right %}
+<button class="btn btn-primary" onclick="novaPermissao()">+ Nova permissão</button>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por usuário ou empresa...">
+    </div>
+    <button class="btn btn-ghost" onclick="carregar()">↺ Atualizar</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Usuário</th><th>App</th><th>Empresa</th>
+      <th>Filial</th><th>Módulo</th><th>Perfil</th>
+      <th>Incluir</th><th>Alterar</th><th>Excluir</th><th>Exportar</th><th></th>
+    </tr></thead>
+    <tbody id="tbody">
+      <tr><td colspan="11"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="overlay" id="modal" onclick="if(event.target===this)fecharModal('modal')">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-title" id="modal-titulo">Nova permissão</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Usuário *</label>
+        <select id="f-usuario">
+          <option value="">Selecione...</option>
+          {% for u in usuarios %}
+          <option value="{{ u.id }}">{{ u.nome }} ({{ u.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>App *</label>
+        <select id="f-app" onchange="carregarModulos()">
+          <option value="">Selecione...</option>
+          {% for a in apps %}
+          <option value="{{ a.id }}">{{ a.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Empresa *</label>
+        <select id="f-empresa" onchange="carregarFiliais()">
+          <option value="">Selecione...</option>
+          {% for e in empresas %}
+          <option value="{{ e.id }}">{{ e.nome_fantasia or e.razao_social }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Filial <span style="font-weight:400;color:var(--text3)">(vazio = todas)</span></label>
+        <select id="f-filial">
+          <option value="">Todas as filiais</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Módulo <span style="font-weight:400;color:var(--text3)">(vazio = todos)</span></label>
+        <select id="f-modulo">
+          <option value="">Todos os módulos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Perfil</label>
+        <select id="f-perfil">
+          <option value="view">view — somente visualizar</option>
+          <option value="editor">editor — incluir e alterar</option>
+          <option value="admin">admin — acesso total</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Ações permitidas</label>
+      <div class="check-group" style="flex-direction:row;flex-wrap:wrap;gap:16px;">
+        <label class="check-item"><input type="checkbox" id="f-incluir"> Incluir</label>
+        <label class="check-item"><input type="checkbox" id="f-alterar"> Alterar</label>
+        <label class="check-item"><input type="checkbox" id="f-excluir"> Excluir</label>
+        <label class="check-item"><input type="checkbox" id="f-exportar"> Exportar</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let todos=[]
+
+const ok='<span style="color:var(--green);font-weight:700;font-size:15px">✓</span>'
+const no='<span style="color:var(--text3);font-size:15px">—</span>'
+
+async function carregar(){
+  const tbody=document.getElementById('tbody')
+  tbody.innerHTML='<tr><td colspan="11"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>'
+  const res=await fetch('/api/permissoes')
+  todos=await res.json()
+  render(todos)
+}
+
+function render(lista){
+  const tbody=document.getElementById('tbody')
+  if(!lista.length){tbody.innerHTML='<tr><td colspan="11"><div class="state-box"><div class="state-icon">🔐</div><p>Nenhuma permissão encontrada.</p></div></td></tr>';return}
+  tbody.innerHTML=lista.map(p=>`<tr>
+    <td style="font-weight:600">${esc(p.usuario_nome)}<br><span class="td-mono" style="font-size:11px">${esc(p.usuario_email)}</span></td>
+    <td><span class="badge blue">${esc(p.app_nome)}</span></td>
+    <td>${esc(p.empresa_nome||'—')}</td>
+    <td>${p.filial_nome?esc(p.filial_nome):'<span style="color:var(--text3);font-size:12px">todas</span>'}</td>
+    <td>${p.modulo_nome?esc(p.modulo_nome):'<span style="color:var(--text3);font-size:12px">todos</span>'}</td>
+    <td><span class="badge ${p.perfil==='admin'?'red':p.perfil==='editor'?'amber':'blue'}">${p.perfil}</span></td>
+    <td style="text-align:center">${p.pode_incluir?ok:no}</td>
+    <td style="text-align:center">${p.pode_alterar?ok:no}</td>
+    <td style="text-align:center">${p.pode_excluir?ok:no}</td>
+    <td style="text-align:center">${p.pode_exportar?ok:no}</td>
+    <td><div class="td-actions">
+      <button class="btn btn-sm btn-edit" onclick="editar('${p.id}')">editar</button>
+      <button class="btn btn-sm btn-del"  onclick="excluir('${p.id}')">excluir</button>
+    </div></td>
+  </tr>`).join('')
+}
+
+document.getElementById('search').addEventListener('input',function(){
+  const q=this.value.toLowerCase()
+  render(todos.filter(p=>(p.usuario_nome||'').toLowerCase().includes(q)||(p.empresa_nome||'').toLowerCase().includes(q)||(p.usuario_email||'').toLowerCase().includes(q)))
+})
+
+async function carregarFiliais(){
+  const eid=document.getElementById('f-empresa').value
+  const sel=document.getElementById('f-filial')
+  sel.innerHTML='<option value="">Todas as filiais</option>'
+  if(!eid)return
+  const res=await fetch(`/api/permissoes/filiais/${eid}`)
+  const lista=await res.json()
+  lista.forEach(f=>sel.innerHTML+=`<option value="${f.id}">${esc(f.nome)}</option>`)
+}
+
+async function carregarModulos(){
+  const aid=document.getElementById('f-app').value
+  const sel=document.getElementById('f-modulo')
+  sel.innerHTML='<option value="">Todos os módulos</option>'
+  if(!aid)return
+  const res=await fetch(`/api/permissoes/modulos/${aid}`)
+  const lista=await res.json()
+  lista.forEach(m=>sel.innerHTML+=`<option value="${m.id}">${esc(m.nome)}</option>`)
+}
+
+function novaPermissao(){
+  document.getElementById('edit-id').value=''
+  ;['f-usuario','f-app','f-empresa'].forEach(id=>document.getElementById(id).value='')
+  document.getElementById('f-filial').innerHTML='<option value="">Todas as filiais</option>'
+  document.getElementById('f-modulo').innerHTML='<option value="">Todos os módulos</option>'
+  document.getElementById('f-perfil').value='view'
+  ;['f-incluir','f-alterar','f-excluir','f-exportar'].forEach(id=>document.getElementById(id).checked=false)
+  document.getElementById('modal-titulo').textContent='Nova permissão'
+  abrirModal('modal')
+}
+
+async function editar(id){
+  const p=todos.find(x=>x.id===id)
+  if(!p)return
+  document.getElementById('edit-id').value=p.id
+  document.getElementById('f-usuario').value=p.usuario_id||''
+  document.getElementById('f-app').value=p.app_id||''
+  document.getElementById('f-empresa').value=p.empresa_id||''
+  document.getElementById('f-perfil').value=p.perfil||'view'
+  document.getElementById('f-incluir').checked=p.pode_incluir
+  document.getElementById('f-alterar').checked=p.pode_alterar
+  document.getElementById('f-excluir').checked=p.pode_excluir
+  document.getElementById('f-exportar').checked=p.pode_exportar
+
+  await carregarFiliais()
+  await carregarModulos()
+
+  document.getElementById('f-filial').value=p.filial_id||''
+  document.getElementById('f-modulo').value=p.modulo_id||''
+  document.getElementById('modal-titulo').textContent='Editar permissão'
+  abrirModal('modal')
+}
+
+async function salvar(){
+  const id=document.getElementById('edit-id').value
+  const dados={
+    usuario_id:document.getElementById('f-usuario').value,
+    app_id:document.getElementById('f-app').value,
+    empresa_id:document.getElementById('f-empresa').value,
+    filial_id:document.getElementById('f-filial').value||null,
+    modulo_id:document.getElementById('f-modulo').value||null,
+    perfil:document.getElementById('f-perfil').value,
+    pode_incluir:document.getElementById('f-incluir').checked,
+    pode_alterar:document.getElementById('f-alterar').checked,
+    pode_excluir:document.getElementById('f-excluir').checked,
+    pode_exportar:document.getElementById('f-exportar').checked,
+  }
+  if(!dados.usuario_id||!dados.app_id||!dados.empresa_id){toast('Usuário, app e empresa são obrigatórios','error');return}
+  const res=await fetch(id?`/api/permissoes/${id}`:'/api/permissoes',{
+    method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dados)
+  })
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  fecharModal('modal')
+  toast(id?'Permissão atualizada!':'Permissão cadastrada!')
+  carregar()
+}
+
+async function excluir(id){
+  if(!confirm('Excluir esta permissão?'))return
+  const res=await fetch(`/api/permissoes/${id}`,{method:'DELETE'})
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  toast('Permissão excluída!')
+  carregar()
+}
+
+carregar()
+</script>
+{% endblock %}

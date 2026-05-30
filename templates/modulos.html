@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Módulos{% endblock %}
+{% block topbar_title %}Módulos{% endblock %}
+{% block topbar_right %}
+<button class="btn btn-primary" onclick="novoModulo()">+ Novo módulo</button>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por nome ou código...">
+    </div>
+    <select id="filtro-app" onchange="render(filtrar())" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--font);font-size:14px;color:var(--text);outline:none;">
+      <option value="">Todos os apps</option>
+      {% for a in apps %}
+      <option value="{{ a.id }}">{{ a.nome }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-ghost" onclick="carregar()">↺ Atualizar</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>App</th><th>Nome</th><th>Código</th>
+      <th>Ícone</th><th>Rota</th><th>Ordem</th><th>Status</th><th></th>
+    </tr></thead>
+    <tbody id="tbody">
+      <tr><td colspan="8"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="overlay" id="modal" onclick="if(event.target===this)fecharModal('modal')">
+  <div class="modal">
+    <div class="modal-title" id="modal-titulo">Novo módulo</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>App *</label>
+        <select id="f-app">
+          <option value="">Selecione...</option>
+          {% for a in apps %}
+          <option value="{{ a.id }}">{{ a.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" id="f-nome" placeholder="Clientes">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código *</label>
+        <input type="text" id="f-codigo" placeholder="pgweb.clientes">
+      </div>
+      <div class="form-group">
+        <label>Ícone (emoji)</label>
+        <input type="text" id="f-icone" placeholder="👥">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rota URL</label>
+        <input type="text" id="f-rota" placeholder="/clientes">
+      </div>
+      <div class="form-group">
+        <label>Ordem</label>
+        <input type="number" id="f-ordem" placeholder="1" min="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="check-item"><input type="checkbox" id="f-ativo" checked> Módulo ativo</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let todos=[]
+
+async function carregar(){
+  const tbody=document.getElementById('tbody')
+  tbody.innerHTML='<tr><td colspan="8"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>'
+  const res=await fetch('/api/modulos')
+  todos=await res.json()
+  render(todos)
+}
+
+function filtrar(){
+  const q=document.getElementById('search').value.toLowerCase()
+  const aid=document.getElementById('filtro-app').value
+  return todos.filter(m=>{
+    const matchQ=(m.nome||'').toLowerCase().includes(q)||(m.codigo||'').toLowerCase().includes(q)
+    const matchA=!aid||m.app_id===aid
+    return matchQ&&matchA
+  })
+}
+
+document.getElementById('search').addEventListener('input',()=>render(filtrar()))
+
+function render(lista){
+  const tbody=document.getElementById('tbody')
+  if(!lista.length){tbody.innerHTML='<tr><td colspan="8"><div class="state-box"><div class="state-icon">⚡</div><p>Nenhum módulo encontrado.</p></div></td></tr>';return}
+  tbody.innerHTML=lista.map(m=>`<tr>
+    <td><span class="badge blue">${esc(m.app_nome)}</span></td>
+    <td style="font-weight:600">${esc(m.nome)}</td>
+    <td class="td-mono">${esc(m.codigo)}</td>
+    <td style="font-size:20px;text-align:center">${m.icone||'—'}</td>
+    <td class="td-mono">${esc(m.url_rota||'—')}</td>
+    <td style="text-align:center">${m.ordem}</td>
+    <td>${m.ativo?'<span class="badge green">ativo</span>':'<span class="badge red">inativo</span>'}</td>
+    <td><div class="td-actions">
+      <button class="btn btn-sm btn-edit" onclick="editar('${m.id}')">editar</button>
+      <button class="btn btn-sm btn-del"  onclick="excluir('${m.id}','${esc(m.nome)}')">excluir</button>
+    </div></td>
+  </tr>`).join('')
+}
+
+function novoModulo(){
+  document.getElementById('edit-id').value=''
+  document.getElementById('f-app').value=''
+  ;['f-nome','f-codigo','f-icone','f-rota'].forEach(id=>document.getElementById(id).value='')
+  document.getElementById('f-ordem').value='0'
+  document.getElementById('f-ativo').checked=true
+  document.getElementById('modal-titulo').textContent='Novo módulo'
+  abrirModal('modal')
+  setTimeout(()=>document.getElementById('f-nome').focus(),100)
+}
+
+function editar(id){
+  const m=todos.find(x=>x.id===id)
+  if(!m)return
+  document.getElementById('edit-id').value=m.id
+  document.getElementById('f-app').value=m.app_id||''
+  document.getElementById('f-nome').value=m.nome||''
+  document.getElementById('f-codigo').value=m.codigo||''
+  document.getElementById('f-icone').value=m.icone||''
+  document.getElementById('f-rota').value=m.url_rota||''
+  document.getElementById('f-ordem').value=m.ordem||0
+  document.getElementById('f-ativo').checked=m.ativo
+  document.getElementById('modal-titulo').textContent='Editar módulo'
+  abrirModal('modal')
+}
+
+async function salvar(){
+  const id=document.getElementById('edit-id').value
+  const dados={
+    app_id:document.getElementById('f-app').value,
+    nome:document.getElementById('f-nome').value.trim(),
+    codigo:document.getElementById('f-codigo').value.trim(),
+    icone:document.getElementById('f-icone').value.trim()||null,
+    url_rota:document.getElementById('f-rota').value.trim()||null,
+    ordem:parseInt(document.getElementById('f-ordem').value)||0,
+    ativo:document.getElementById('f-ativo').checked,
+  }
+  if(!dados.app_id||!dados.nome||!dados.codigo){toast('App, nome e código são obrigatórios','error');return}
+  const res=await fetch(id?`/api/modulos/${id}`:'/api/modulos',{
+    method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dados)
+  })
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  fecharModal('modal')
+  toast(id?'Módulo atualizado!':'Módulo cadastrado!')
+  carregar()
+}
+
+async function excluir(id,nome){
+  if(!confirm(`Desativar "${nome}"?`))return
+  const res=await fetch(`/api/modulos/${id}`,{method:'DELETE'})
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  toast('Módulo desativado!')
+  carregar()
+}
+
+carregar()
+</script>
+{% endblock %}

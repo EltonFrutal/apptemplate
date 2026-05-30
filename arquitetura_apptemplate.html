@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppTemplate — Arquitetura do Sistema</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f4f6fb; --bg2:#ffffff; --bg3:#f0f3fa; --bg4:#e8edf8;
+  --border:#dde3f0;
+  --blue:#3b6ef8; --blue-l:#ebf0ff; --blue-m:#c7d4fd;
+  --green:#12b76a; --green-l:#e6f9f1;
+  --amber:#f59e0b; --amber-l:#fef3c7;
+  --red:#ef4444; --red-l:#fef2f2;
+  --purple:#8b5cf6; --purple-l:#f5f3ff;
+  --teal:#0891b2; --teal-l:#e0f7fa;
+  --orange:#f97316; --orange-l:#fff7ed;
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow2:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.06);
+  --font:'Plus Jakarta Sans',sans-serif;
+  --mono:'Fira Code',monospace;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.65;font-size:15px;}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#1e3a8a 0%,#3b6ef8 50%,#6366f1 100%);padding:56px 60px 48px;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none;}
+.hi{position:relative;z-index:1;max-width:1100px;margin:0 auto;}
+.htag{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.5px;margin-bottom:20px;}
+.htag::before{content:'';width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;}
+.htitle{font-size:42px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:14px;}
+.htitle span{color:rgba(255,255,255,.6);}
+.hdesc{color:rgba(255,255,255,.75);font-size:16px;max-width:580px;margin-bottom:28px;}
+.hchips{display:flex;gap:10px;flex-wrap:wrap;}
+.chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:rgba(255,255,255,.85);font-family:var(--mono);}
+
+/* BODY */
+.body{max-width:1100px;margin:0 auto;padding:48px 40px 80px;}
+.section{margin-bottom:56px;}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+.snum{width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stitle{font-size:19px;font-weight:700;letter-spacing:-.4px;color:var(--text);}
+.ssub{font-size:13px;color:var(--text3);margin-top:2px;}
+.divider{height:1px;background:var(--border);margin:48px 0;}
+
+/* FLOW */
+.flow-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:32px;box-shadow:var(--shadow);display:flex;align-items:center;overflow-x:auto;}
+.fstep{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:108px;}
+.ficon{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:var(--shadow);}
+.fi-bl{background:var(--blue-l);} .fi-gr{background:var(--green-l);} .fi-am{background:var(--amber-l);} .fi-pu{background:var(--purple-l);} .fi-te{background:var(--teal-l);}
+.fname2{font-size:13px;font-weight:700;color:var(--text);text-align:center;}
+.fhint{font-size:11px;color:var(--text3);text-align:center;font-family:var(--mono);}
+.farr{font-size:22px;color:var(--border);margin:0 8px;padding-bottom:28px;flex-shrink:0;}
+
+/* HIER */
+.hier-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;}
+.hrow{display:flex;align-items:center;}
+.hrow.i1{padding-left:36px;} .hrow.i2{padding-left:72px;} .hrow.i3{padding-left:108px;} .hrow.i4{padding-left:144px;}
+.hconn{font-size:16px;color:var(--text3);margin-right:8px;font-family:var(--mono);}
+.hnode{display:flex;align-items:center;gap:12px;padding:11px 18px;border-radius:10px;border:1.5px solid;flex:1;max-width:580px;transition:transform .15s;}
+.hnode:hover{transform:translateX(4px);}
+.hnode.l0{border-color:#bfdbfe;background:#eff6ff;} .hnode.l1{border-color:#bbf7d0;background:#f0fdf4;}
+.hnode.l2{border-color:#fde68a;background:#fffbeb;} .hnode.l3{border-color:#ddd6fe;background:#f5f3ff;}
+.hnode.l4{border-color:#a5f3fc;background:#ecfeff;}
+.hicon2{font-size:20px;}
+.hname2{font-size:14px;font-weight:700;color:var(--text);}
+.hdesc2{font-size:12px;color:var(--text2);font-family:var(--mono);margin-top:2px;}
+
+/* TABLES */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.tcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s;}
+.tcard:hover{box-shadow:var(--shadow2);}
+.thead3{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.tdot{width:10px;height:10px;border-radius:50%;}
+.tname{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--text);}
+.ttag{margin-left:auto;font-size:11px;color:var(--text3);background:var(--bg3);border-radius:6px;padding:2px 8px;}
+.tfields{padding:8px 0;}
+
+/* field types */
+.tf{display:flex;align-items:center;gap:10px;padding:7px 18px;border-bottom:1px solid #f8faff;transition:background .1s;}
+.tf:last-child{border-bottom:none;}
+.tf:hover{background:var(--bg3);}
+.tf.aud{background:#fffbeb;border-left:3px solid var(--amber);padding-left:15px;}
+.tf.cancel{background:#fff7ed;border-left:3px solid var(--orange);padding-left:15px;}
+.tf.new{background:#f0fdf4;border-left:3px solid var(--green);padding-left:15px;}
+.fk2{font-size:10px;font-family:var(--mono);font-weight:700;padding:2px 7px;border-radius:5px;min-width:32px;text-align:center;}
+.fk2.pk{background:#dbeafe;color:#1d4ed8;} .fk2.fk{background:#fef3c7;color:#b45309;}
+.fk2.uk{background:#dcfce7;color:#166534;} .fk2.__{background:var(--bg3);color:var(--text3);}
+.fn2{font-family:var(--mono);font-size:13px;color:var(--text);flex:1;}
+.ft{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.nbadge{font-size:10px;border-radius:4px;padding:1px 6px;font-weight:700;}
+.nbadge.green{background:#dcfce7;color:#166534;}
+.nbadge.amber{background:#fef3c7;color:#b45309;}
+.nbadge.orange{background:#ffedd5;color:#c2410c;}
+
+/* AUDIT LEGEND */
+.aud-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.al-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;}
+.al-bar{width:4px;height:20px;border-radius:2px;flex-shrink:0;}
+
+/* AUDIT DETAIL */
+.aud-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--shadow);margin-top:0;}
+.aud-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;}
+.aud-col-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.aud-fields{display:flex;flex-direction:column;gap:8px;}
+.aud-field{display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border-radius:8px;padding:10px 14px;}
+.aud-field-icon{font-size:16px;flex-shrink:0;}
+.aud-field-name{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);}
+.aud-field-desc{font-size:12px;color:var(--text2);margin-top:2px;}
+.aud-field.amber{background:var(--amber-l);border:1px solid #fde68a;}
+.aud-field.orange{background:var(--orange-l);border:1px solid #fed7aa;}
+
+/* APPS */
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;}
+.acard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;position:relative;overflow:hidden;}
+.acard:hover{box-shadow:var(--shadow2);transform:translateY(-2px);}
+.acard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;}
+.ac-bl::before{background:linear-gradient(90deg,var(--blue),#6366f1);}
+.ac-gr::before{background:linear-gradient(90deg,var(--green),#059669);}
+.ac-am::before{background:linear-gradient(90deg,var(--amber),#d97706);}
+.ac-pu::before{background:linear-gradient(90deg,var(--purple),#7c3aed);}
+.aicon2{font-size:30px;margin-bottom:12px;}
+.aname2{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.adb{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:16px;background:var(--bg3);display:inline-block;padding:3px 10px;border-radius:6px;}
+.amods{display:flex;flex-direction:column;gap:5px;}
+.amod{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);font-weight:500;}
+.amod-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.ac-bl .amod-dot{background:var(--blue);} .ac-gr .amod-dot{background:var(--green);}
+.ac-am .amod-dot{background:var(--amber);} .ac-pu .amod-dot{background:var(--purple);}
+
+/* PERM */
+.ptable-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+.ptable{width:100%;border-collapse:collapse;}
+.ptable th{padding:13px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;font-family:var(--mono);background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap;}
+.ptable td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--bg3);color:var(--text);white-space:nowrap;}
+.ptable tr:last-child td{border-bottom:none;}
+.ptable tbody tr:hover td{background:var(--bg3);}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;}
+.b-admin{background:#fef2f2;color:#dc2626;border-color:#fecaca;} .b-admin::before{background:#dc2626;}
+.b-editor{background:#fffbeb;color:#b45309;border-color:#fde68a;} .b-editor::before{background:#f59e0b;}
+.b-view{background:var(--blue-l);color:#1d4ed8;border-color:var(--blue-m);} .b-view::before{background:var(--blue);}
+.b-none{background:var(--bg3);color:var(--text3);border-color:var(--border);} .b-none::before{background:var(--text3);}
+.ok{color:var(--green);font-weight:700;font-size:15px;}
+.no{color:#e2e8f0;font-size:15px;}
+
+/* PERM DETAIL */
+.perm-detail{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px;}
+.pdet-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+.pdet-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.pdet-body{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.pdet-row{display:flex;align-items:center;justify-content:space-between;}
+.pdet-label{font-size:13px;color:var(--text2);}
+.pdet-val{font-size:12px;font-weight:700;font-family:var(--mono);}
+.pdet-val.yes{color:var(--green);} .pdet-val.noo{color:var(--text3);}
+
+/* INFO BOXES */
+.info-box{background:var(--blue-l);border:1px solid var(--blue-m);border-radius:10px;padding:16px 20px;margin-top:16px;display:flex;gap:12px;align-items:flex-start;}
+.warn-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px 20px;margin-top:16px;display:flex;gap:12px;align-items:flex-start;}
+.box-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.box-text{font-size:13px;line-height:1.6;}
+.info-box .box-text{color:#1e40af;}
+.warn-box .box-text{color:#92400e;}
+.box-text strong{font-weight:700;}
+
+/* SQL */
+.sql-wrap{background:#0f172a;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow2);}
+.sql-bar{background:#1e293b;padding:12px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155;}
+.sql-dot2{width:11px;height:11px;border-radius:50%;}
+.sql-fn{margin-left:8px;font-family:var(--mono);font-size:13px;color:#94a3b8;}
+pre{padding:24px 28px;font-family:var(--mono);font-size:13px;line-height:1.9;overflow-x:auto;color:#cbd5e1;}
+.kw{color:#7dd3fc;font-weight:600;} .tp{color:#fbbf24;} .fn{color:#86efac;}
+.cm{color:#475569;font-style:italic;} .st{color:#f9a8d4;}
+.hl{color:#fde68a;font-weight:600;} .hl2{color:#fed7aa;font-weight:600;}
+
+/* LEGEND */
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);font-family:var(--mono);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;}
+.ldot{width:10px;height:10px;border-radius:3px;}
+
+@media(max-width:700px){
+  .header{padding:36px 24px 32px;} .htitle{font-size:28px;}
+  .body{padding:32px 20px 60px;}
+  .perm-detail{grid-template-columns:1fr 1fr;}
+  .aud-grid{grid-template-columns:1fr;}
+  .ptable th:nth-child(n+5),.ptable td:nth-child(n+5){display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hi">
+    <div class="htag">Documento de Arquitetura · v1.2</div>
+    <div class="htitle">App<span>Template</span><br>Sistema Multi-App</div>
+    <div class="hdesc">Arquitetura completa com controle de acesso hierárquico, campos de auditoria em todas as tabelas e integração com sistema Consys.</div>
+    <div class="hchips">
+      <div class="chip">Windows Server 2019</div>
+      <div class="chip">PostgreSQL 16</div>
+      <div class="chip">Python · Flask</div>
+      <div class="chip">HTML · JS</div>
+      <div class="chip">github/EltonFrutal/apptemplate</div>
+    </div>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- 01 FLUXO -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum">01</div>
+      <div><div class="stitle">Jornada do Usuário</div><div class="ssub">Do login até acessar um módulo dentro de uma empresa</div></div>
+    </div>
+    <div class="flow-wrap">
+      <div class="fstep"><div class="ficon fi-bl">🔐</div><div class="fname2">Login</div><div class="fhint">email + senha</div></div>
+      <div class="farr">›</div>
+      <div class="fstep"><div class="ficon fi-gr">📱</div><div class="fname2">Meus Apps</div><div class="fhint">apps vinculados</div></div>
+      <div class="farr">›</div>
+      <div class="fstep"><div class="ficon fi-am">🏢</div><div class="fname2">Empresa</div><div class="fhint">seleciona empresa</div></div>
+      <div class="farr">›</div>
+      <div class="fstep"><div class="ficon fi-pu">🏬</div><div class="fname2">Filial</div><div class="fhint">só as vinculadas</div></div>
+      <div class="farr">›</div>
+      <div class="fstep"><div class="ficon fi-te">⚡</div><div class="fname2">Módulos</div><div class="fhint">conforme permissão</div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 02 ORGANOGRAMA DE NAVEGAÇÃO -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:#0e7490">02</div>
+      <div><div class="stitle">Organograma de Navegação</div><div class="ssub">Visão horizontal completa — usuário · apps · empresas · filiais · módulos com permissões</div></div>
+    </div>
+
+    <!-- SVG ORGANOGRAMA DARK em card claro -->
+    <div style="background:#111827;border-radius:14px;padding:32px 24px 24px;overflow-x:auto;">
+
+      <svg viewBox="0 0 1160 680" width="100%" style="min-width:800px;max-width:1100px;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="og-gradBlue" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#1a4f8a"/><stop offset="100%" stop-color="#2563a8"/></linearGradient>
+          <linearGradient id="og-gradOrange" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#c45015"/><stop offset="100%" stop-color="#e8671a"/></linearGradient>
+          <linearGradient id="og-gradGreen" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#14542a"/><stop offset="100%" stop-color="#1e7a3a"/></linearGradient>
+          <linearGradient id="og-gradCyan" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0a6f8a"/><stop offset="100%" stop-color="#0e9aba"/></linearGradient>
+          <linearGradient id="og-gradGray" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2d3748"/><stop offset="100%" stop-color="#3d4a5c"/></linearGradient>
+          <marker id="og-aOrange" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#e8671a"/></marker>
+          <marker id="og-aGreen"  markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#1e7a3a"/></marker>
+          <marker id="og-aCyan"   markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#0e9aba"/></marker>
+          <marker id="og-aGray"   markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 z" fill="#4b5563"/></marker>
+        </defs>
+
+        <!-- LABELS COLUNA -->
+        <text x="80"  y="20" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.28)" font-weight="700" letter-spacing="1.5">USUÁRIO</text>
+        <text x="255" y="20" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.28)" font-weight="700" letter-spacing="1.5">APPS</text>
+        <text x="500" y="20" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.28)" font-weight="700" letter-spacing="1.5">EMPRESAS + FILIAIS</text>
+        <text x="850" y="20" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.28)" font-weight="700" letter-spacing="1.5">MÓDULOS</text>
+
+        <!-- USUÁRIO -->
+        <rect x="20" y="290" width="120" height="66" rx="12" fill="url(#og-gradBlue)"/>
+        <rect x="20" y="290" width="120" height="66" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="80" y="318" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">👤 Usuário</text>
+        <text x="80" y="336" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.55)">joao@email.com</text>
+        <text x="80" y="350" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.4)">perfil: view</text>
+
+        <!-- USUÁRIO → APPS -->
+        <line x1="140" y1="323" x2="158" y2="323" stroke="#e8671a" stroke-width="2"/>
+        <line x1="158" y1="210" x2="158" y2="436" stroke="#e8671a" stroke-width="2"/>
+        <line x1="158" y1="210" x2="170" y2="210" stroke="#e8671a" stroke-width="2" marker-end="url(#og-aOrange)"/>
+        <line x1="158" y1="436" x2="170" y2="436" stroke="#e8671a" stroke-width="2" marker-end="url(#og-aOrange)"/>
+
+        <!-- APPS -->
+        <rect x="170" y="180" width="140" height="60" rx="12" fill="url(#og-gradOrange)"/>
+        <rect x="170" y="180" width="140" height="60" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="240" y="206" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="15" font-weight="700" fill="white">📊 pgweb</text>
+        <text x="240" y="226" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.55)">porta :5001</text>
+
+        <rect x="170" y="406" width="140" height="60" rx="12" fill="url(#og-gradOrange)"/>
+        <rect x="170" y="406" width="140" height="60" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="240" y="432" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="15" font-weight="700" fill="white">🎟 ingressos</text>
+        <text x="240" y="452" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.55)">porta :5003</text>
+
+        <!-- APPS → EMPRESAS -->
+        <line x1="310" y1="210" x2="332" y2="210" stroke="#1e7a3a" stroke-width="2"/>
+        <line x1="332" y1="100" x2="332" y2="340" stroke="#1e7a3a" stroke-width="2"/>
+        <line x1="332" y1="100" x2="350" y2="100" stroke="#1e7a3a" stroke-width="2" marker-end="url(#og-aGreen)"/>
+        <line x1="332" y1="220" x2="350" y2="220" stroke="#1e7a3a" stroke-width="2" marker-end="url(#og-aGreen)"/>
+        <line x1="332" y1="340" x2="350" y2="340" stroke="#1e7a3a" stroke-width="2" marker-end="url(#og-aGreen)"/>
+        <line x1="310" y1="436" x2="332" y2="436" stroke="#1e7a3a" stroke-width="2"/>
+        <line x1="332" y1="436" x2="332" y2="530" stroke="#1e7a3a" stroke-width="2"/>
+        <line x1="332" y1="530" x2="350" y2="530" stroke="#1e7a3a" stroke-width="2" marker-end="url(#og-aGreen)"/>
+
+        <!-- EMPRESA A -->
+        <rect x="350" y="42"  width="330" height="116" rx="12" fill="#0d3320" stroke="#1e7a3a" stroke-width="1.5"/>
+        <rect x="350" y="42"  width="330" height="42"  rx="12" fill="url(#og-gradGreen)"/>
+        <rect x="350" y="62"  width="330" height="22"       fill="url(#og-gradGreen)"/>
+        <text x="430" y="68" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">🏢 Empresa A</text>
+        <text x="430" y="82" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.6)">EMP001 · cod_consys: 0101</text>
+        <!-- filiais A -->
+        <rect x="362" y="92" width="90" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="407" y="112" text-anchor="middle" font-size="16">🏬</text>
+        <text x="407" y="128" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Matriz SP</text>
+        <text x="407" y="142" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+        <rect x="464" y="92" width="90" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="509" y="112" text-anchor="middle" font-size="16">🏬</text>
+        <text x="509" y="128" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Filial RJ</text>
+        <text x="509" y="142" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+        <rect x="566" y="92" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="#374151" stroke-width="1.5"/>
+        <text x="611" y="112" text-anchor="middle" font-size="16" opacity=".3">🏬</text>
+        <text x="611" y="128" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="rgba(255,255,255,.3)">Filial BH</text>
+        <circle cx="636" cy="96" r="9" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+        <text x="636" y="100" text-anchor="middle" font-size="10">🔒</text>
+        <text x="611" y="142" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="rgba(255,255,255,.25)">— bloqueada</text>
+
+        <!-- EMPRESA B -->
+        <rect x="350" y="162" width="330" height="116" rx="12" fill="#0d3320" stroke="#1e7a3a" stroke-width="1.5"/>
+        <rect x="350" y="162" width="330" height="42"  rx="12" fill="url(#og-gradGreen)"/>
+        <rect x="350" y="182" width="330" height="22"       fill="url(#og-gradGreen)"/>
+        <text x="430" y="188" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">🏢 Empresa B</text>
+        <text x="430" y="202" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.6)">EMP002 · cod_consys: 0202</text>
+        <!-- filiais B -->
+        <rect x="362" y="212" width="100" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="412" y="232" text-anchor="middle" font-size="16">🏬</text>
+        <text x="412" y="248" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Matriz CPS</text>
+        <text x="412" y="262" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+        <rect x="474" y="212" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="#374151" stroke-width="1.5"/>
+        <text x="519" y="232" text-anchor="middle" font-size="16" opacity=".3">🏬</text>
+        <text x="519" y="248" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="rgba(255,255,255,.3)">Filial SP</text>
+        <circle cx="544" cy="216" r="9" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+        <text x="544" y="220" text-anchor="middle" font-size="10">🔒</text>
+        <text x="519" y="262" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="rgba(255,255,255,.25)">— bloqueada</text>
+        <rect x="576" y="212" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="#374151" stroke-width="1.5"/>
+        <text x="621" y="232" text-anchor="middle" font-size="16" opacity=".3">🏬</text>
+        <text x="621" y="248" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="rgba(255,255,255,.3)">Filial RS</text>
+        <circle cx="646" cy="216" r="9" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+        <text x="646" y="220" text-anchor="middle" font-size="10">🔒</text>
+        <text x="621" y="262" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="rgba(255,255,255,.25)">— bloqueada</text>
+
+        <!-- EMPRESA C -->
+        <rect x="350" y="282" width="330" height="116" rx="12" fill="#0d3320" stroke="#1e7a3a" stroke-width="1.5"/>
+        <rect x="350" y="282" width="330" height="42"  rx="12" fill="url(#og-gradGreen)"/>
+        <rect x="350" y="302" width="330" height="22"       fill="url(#og-gradGreen)"/>
+        <text x="430" y="308" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">🏢 Empresa C</text>
+        <text x="430" y="322" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.6)">EMP003 · cod_consys: 0303</text>
+        <!-- filiais C — acesso total -->
+        <rect x="362" y="332" width="90" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="407" y="352" text-anchor="middle" font-size="16">🏬</text>
+        <text x="407" y="368" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Matriz RJ</text>
+        <text x="407" y="382" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+        <rect x="464" y="332" width="90" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="509" y="352" text-anchor="middle" font-size="16">🏬</text>
+        <text x="509" y="368" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Filial MG</text>
+        <text x="509" y="382" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+        <rect x="566" y="332" width="90" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="611" y="352" text-anchor="middle" font-size="16">🏬</text>
+        <text x="611" y="368" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Filial PR</text>
+        <text x="611" y="382" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+
+        <!-- EMPRESA D -->
+        <rect x="350" y="472" width="330" height="116" rx="12" fill="#0d3320" stroke="#1e7a3a" stroke-width="1.5"/>
+        <rect x="350" y="472" width="330" height="42"  rx="12" fill="url(#og-gradGreen)"/>
+        <rect x="350" y="492" width="330" height="22"       fill="url(#og-gradGreen)"/>
+        <text x="430" y="498" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">🏢 Empresa D</text>
+        <text x="430" y="512" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.6)">EMP004 · cod_consys: 0404</text>
+        <!-- filiais D -->
+        <rect x="362" y="522" width="90" height="56" rx="8" fill="rgba(14,154,186,.2)" stroke="#0e9aba" stroke-width="1.5"/>
+        <text x="407" y="542" text-anchor="middle" font-size="16">🏬</text>
+        <text x="407" y="558" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="white">Matriz BA</text>
+        <text x="407" y="572" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="#4ade80">✓ acesso</text>
+        <rect x="464" y="522" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="#374151" stroke-width="1.5"/>
+        <text x="509" y="542" text-anchor="middle" font-size="16" opacity=".3">🏬</text>
+        <text x="509" y="558" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="11" font-weight="700" fill="rgba(255,255,255,.3)">Filial PE</text>
+        <circle cx="534" cy="526" r="9" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+        <text x="534" y="530" text-anchor="middle" font-size="10">🔒</text>
+        <text x="509" y="572" text-anchor="middle" font-family="'Fira Code'" font-size="9" fill="rgba(255,255,255,.25)">— bloqueada</text>
+
+        <!-- EMPRESAS → MÓDULOS -->
+        <line x1="680" y1="100" x2="700" y2="100" stroke="#0e9aba" stroke-width="1.5" stroke-dasharray="3 2" opacity=".5"/>
+        <line x1="680" y1="220" x2="700" y2="220" stroke="#0e9aba" stroke-width="2" marker-end="url(#og-aCyan)"/>
+        <line x1="680" y1="340" x2="700" y2="340" stroke="#0e9aba" stroke-width="1.5" stroke-dasharray="3 2" opacity=".5"/>
+        <line x1="680" y1="530" x2="700" y2="530" stroke="#0e9aba" stroke-width="1.5" stroke-dasharray="3 2" opacity=".5"/>
+        <line x1="700" y1="100" x2="715" y2="100" stroke="#0e9aba" stroke-width="1.5" opacity=".4" stroke-dasharray="3 2"/>
+        <line x1="700" y1="220" x2="715" y2="220" stroke="#0e9aba" stroke-width="2"/>
+        <line x1="700" y1="340" x2="715" y2="340" stroke="#0e9aba" stroke-width="1.5" opacity=".4" stroke-dasharray="3 2"/>
+        <line x1="715" y1="100" x2="715" y2="340" stroke="#0e9aba" stroke-width="1.5" opacity=".4" stroke-dasharray="3 2"/>
+        <line x1="715" y1="220" x2="730" y2="220" stroke="#0e9aba" stroke-width="2"/>
+        <line x1="730" y1="60"  x2="730" y2="540" stroke="#0e9aba" stroke-width="2"/>
+        <line x1="730" y1="60"  x2="750" y2="60"  stroke="#0e9aba" stroke-width="2" marker-end="url(#og-aCyan)"/>
+        <line x1="730" y1="155" x2="750" y2="155" stroke="#0e9aba" stroke-width="2" marker-end="url(#og-aCyan)"/>
+        <line x1="730" y1="255" x2="750" y2="255" stroke="#0e9aba" stroke-width="2" marker-end="url(#og-aCyan)"/>
+        <line x1="730" y1="355" x2="750" y2="355" stroke="#0e9aba" stroke-width="2" marker-end="url(#og-aCyan)"/>
+        <line x1="730" y1="445" x2="750" y2="445" stroke="#4b5563" stroke-width="2" marker-end="url(#og-aGray)"/>
+        <line x1="730" y1="540" x2="750" y2="540" stroke="#4b5563" stroke-width="2" marker-end="url(#og-aGray)"/>
+
+        <!-- MÓDULOS -->
+        <rect x="750" y="32"  width="180" height="56" rx="12" fill="url(#og-gradCyan)"/>
+        <rect x="750" y="32"  width="180" height="56" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="840" y="55"  text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">📊 Dashboard</text>
+        <text x="840" y="73"  text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.7)">ver · incluir · alterar</text>
+
+        <rect x="750" y="127" width="180" height="56" rx="12" fill="url(#og-gradCyan)"/>
+        <rect x="750" y="127" width="180" height="56" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="840" y="150" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">👥 Clientes</text>
+        <text x="840" y="168" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.7)">ver apenas</text>
+
+        <rect x="750" y="227" width="180" height="56" rx="12" fill="url(#og-gradCyan)"/>
+        <rect x="750" y="227" width="180" height="56" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="840" y="250" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">📁 Relatórios</text>
+        <text x="840" y="268" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.7)">ver · exportar</text>
+
+        <rect x="750" y="327" width="180" height="56" rx="12" fill="url(#og-gradCyan)"/>
+        <rect x="750" y="327" width="180" height="56" rx="12" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+        <text x="840" y="350" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="white">💰 A Receber</text>
+        <text x="840" y="368" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.7)">ver apenas</text>
+
+        <!-- bloqueados -->
+        <rect x="750" y="417" width="180" height="56" rx="12" fill="url(#og-gradGray)"/>
+        <rect x="750" y="417" width="180" height="56" rx="12" fill="none" stroke="#374151" stroke-width="1"/>
+        <text x="840" y="440" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="rgba(255,255,255,.35)">📤 Upload CSV</text>
+        <text x="840" y="458" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.25)">sem acesso</text>
+        <circle cx="922" cy="421" r="11" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+        <text x="922" y="426" text-anchor="middle" font-size="13">🔒</text>
+
+        <rect x="750" y="512" width="180" height="56" rx="12" fill="url(#og-gradGray)"/>
+        <rect x="750" y="512" width="180" height="56" rx="12" fill="none" stroke="#374151" stroke-width="1"/>
+        <text x="840" y="535" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="14" font-weight="700" fill="rgba(255,255,255,.35)">⚙️ Config</text>
+        <text x="840" y="553" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.25)">sem acesso</text>
+        <circle cx="922" cy="516" r="11" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+        <text x="922" y="521" text-anchor="middle" font-size="13">🔒</text>
+
+        <!-- NOTA FILIAIS -->
+        <rect x="950" y="200" width="190" height="100" rx="10" fill="rgba(14,154,186,.1)" stroke="rgba(14,154,186,.3)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="1045" y="226" text-anchor="middle" font-family="'Plus Jakarta Sans'" font-size="12" font-weight="700" fill="#60d8f0">💡 Filiais nos módulos</text>
+        <text x="1045" y="246" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.5)">campo de filtro exibe</text>
+        <text x="1045" y="262" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.5)">apenas filiais com</text>
+        <text x="1045" y="278" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="#4ade80">✓ acesso liberado</text>
+        <text x="1045" y="294" text-anchor="middle" font-family="'Fira Code'" font-size="10" fill="rgba(255,255,255,.35)">bloqueadas 🔒 somem</text>
+        <line x1="950" y1="250" x2="932" y2="250" stroke="rgba(14,154,186,.4)" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#og-aCyan)"/>
+
+      </svg>
+
+      <!-- LEGENDA -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-family:'Fira Code',monospace;"><span style="width:10px;height:10px;border-radius:3px;background:#2563a8;display:inline-block"></span>Usuário</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-family:'Fira Code',monospace;"><span style="width:10px;height:10px;border-radius:3px;background:#e8671a;display:inline-block"></span>Apps vinculados</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-family:'Fira Code',monospace;"><span style="width:10px;height:10px;border-radius:3px;background:#1e7a3a;display:inline-block"></span>Empresas</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-family:'Fira Code',monospace;"><span style="width:10px;height:10px;border-radius:3px;background:#0e9aba;display:inline-block"></span>Filial ✓ acesso</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-family:'Fira Code',monospace;"><span style="width:10px;height:10px;border-radius:3px;background:#374151;display:inline-block"></span>🔒 Filial/Módulo bloqueado</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-family:'Fira Code',monospace;"><span style="color:rgba(255,255,255,.3);font-size:12px;">- - -</span>&nbsp;Empresa não detalhada</div>
+      </div>
+
+    </div>
+
+    <!-- nota explicativa -->
+    <div style="background:var(--blue-l);border:1px solid var(--blue-m);border-radius:10px;padding:14px 20px;margin-top:16px;font-size:13px;color:#1e40af;line-height:1.7;">
+      💡 <strong>Filiais com 🔒 bloqueadas</strong> não aparecem nos campos de filtro dos módulos — o usuário simplesmente não as vê.<br>
+      O campo <code style="background:rgba(30,64,175,.1);padding:1px 6px;border-radius:4px;font-family:'Fira Code',monospace;font-size:12px;">filial_id = NULL</code> na tabela permissoes significa acesso a <strong>todas as filiais</strong> da empresa. Quando preenchido, o usuário acessa apenas as filiais explicitamente vinculadas.
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 03 HIERARQUIA (era 02) -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:var(--green)">03</div>
+      <div><div class="stitle">Hierarquia do Sistema</div><div class="ssub">Permissões definidas em cada nível — usuário pode ter perfis diferentes em cada combinação</div></div>
+    </div>
+    <div class="hier-wrap">
+      <div class="hrow"><div class="hnode l0"><div class="hicon2">🌐</div><div><div class="hname2">Plataforma AppTemplate</div><div class="hdesc2">raiz do sistema · gerencia todos os apps e usuários</div></div></div></div>
+      <div class="hrow i1"><div class="hconn">└─</div><div class="hnode l1"><div class="hicon2">📱</div><div><div class="hname2">App  (pgweb · gestão · ingressos · ...)</div><div class="hdesc2">banco próprio · db_pgweb · db_gestao · db_ingressos</div></div></div></div>
+      <div class="hrow i2"><div class="hconn">└─</div><div class="hnode l2"><div class="hicon2">🏢</div><div><div class="hname2">Empresa  (ex: Empresa A Ltda)</div><div class="hdesc2">CNPJ · razão social · logo · codigo_consys</div></div></div></div>
+      <div class="hrow i3"><div class="hconn">└─</div><div class="hnode l3"><div class="hicon2">🏬</div><div><div class="hname2">Filial  (Matriz SP · Filial RJ · Filial BH)</div><div class="hdesc2">CNPJ próprio · is_matriz · codigo_consys · usuário vê só as suas</div></div></div></div>
+      <div class="hrow i4"><div class="hconn">└─</div><div class="hnode l4"><div class="hicon2">⚡</div><div><div class="hname2">Módulo  (Clientes · Vendas · Financeiro)</div><div class="hdesc2">pode_incluir · pode_alterar · pode_excluir · pode_exportar</div></div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 04 AUDITORIA -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:var(--amber)">04</div>
+      <div><div class="stitle">Campos de Auditoria — Tipo 1</div><div class="ssub">Campos diretos em todas as tabelas — rastreio completo de criação, alteração e cancelamento</div></div>
+    </div>
+
+    <div class="aud-box">
+      <div class="aud-grid">
+        <div>
+          <div class="aud-col-title">🟡 Tabelas do banco central</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">usuarios · apps · empresas · filiais · modulos · permissoes</div>
+          <div class="aud-fields">
+            <div class="aud-field amber">
+              <div class="aud-field-icon">📅</div>
+              <div>
+                <div class="aud-field-name">criado_em</div>
+                <div class="aud-field-desc">timestamp — preenchido automaticamente na criação</div>
+              </div>
+            </div>
+            <div class="aud-field amber">
+              <div class="aud-field-icon">👤</div>
+              <div>
+                <div class="aud-field-name">criado_por</div>
+                <div class="aud-field-desc">uuid → usuarios — quem criou o registro</div>
+              </div>
+            </div>
+            <div class="aud-field amber">
+              <div class="aud-field-icon">✏️</div>
+              <div>
+                <div class="aud-field-name">alterado_em</div>
+                <div class="aud-field-desc">timestamp — atualizado a cada modificação</div>
+              </div>
+            </div>
+            <div class="aud-field amber">
+              <div class="aud-field-icon">👤</div>
+              <div>
+                <div class="aud-field-name">alterado_por</div>
+                <div class="aud-field-desc">uuid → usuarios — quem fez a última alteração</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="aud-col-title">🟠 Tabelas de dados dos clientes</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">clientes · vendas · financeiro · e demais tabelas de negócio</div>
+          <div class="aud-fields">
+            <div class="aud-field amber">
+              <div class="aud-field-icon">📅</div>
+              <div>
+                <div class="aud-field-name">criado_em</div>
+                <div class="aud-field-desc">timestamp — preenchido automaticamente na criação</div>
+              </div>
+            </div>
+            <div class="aud-field amber">
+              <div class="aud-field-icon">👤</div>
+              <div>
+                <div class="aud-field-name">criado_por</div>
+                <div class="aud-field-desc">uuid → usuarios — quem criou o registro</div>
+              </div>
+            </div>
+            <div class="aud-field amber">
+              <div class="aud-field-icon">✏️</div>
+              <div>
+                <div class="aud-field-name">alterado_em</div>
+                <div class="aud-field-desc">timestamp — atualizado a cada modificação</div>
+              </div>
+            </div>
+            <div class="aud-field amber">
+              <div class="aud-field-icon">👤</div>
+              <div>
+                <div class="aud-field-name">alterado_por</div>
+                <div class="aud-field-desc">uuid → usuarios — quem fez a última alteração</div>
+              </div>
+            </div>
+            <div class="aud-field orange">
+              <div class="aud-field-icon">🚫</div>
+              <div>
+                <div class="aud-field-name">cancelado_em</div>
+                <div class="aud-field-desc">timestamp — quando o registro foi cancelado</div>
+              </div>
+            </div>
+            <div class="aud-field orange">
+              <div class="aud-field-icon">👤</div>
+              <div>
+                <div class="aud-field-name">cancelado_por</div>
+                <div class="aud-field-desc">uuid → usuarios — quem cancelou o registro</div>
+              </div>
+            </div>
+            <div class="aud-field orange">
+              <div class="aud-field-icon">📝</div>
+              <div>
+                <div class="aud-field-name">motivo_cancelamento</div>
+                <div class="aud-field-desc">text — justificativa do cancelamento</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top:24px;">
+        <div class="box-icon">💡</div>
+        <div class="box-text">
+          <strong>Regra de ouro — nunca excluir, sempre cancelar:</strong> registros de dados dos clientes nunca são deletados do banco. Quando cancelados, o campo <code>ativo = false</code> e <code>cancelado_em</code> é preenchido. As listagens filtram <code>WHERE ativo = true</code> e os cancelados ficam invisíveis na tela — mas preservados para auditoria e histórico.
+        </div>
+      </div>
+    </div>
+
+    <div class="aud-legend">
+      <div class="al-item"><div class="al-bar" style="background:var(--amber)"></div>Auditoria básica — todas as tabelas</div>
+      <div class="al-item"><div class="al-bar" style="background:var(--orange)"></div>Cancelamento — tabelas de dados dos clientes</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 05 TABELAS -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:var(--purple)">05</div>
+      <div><div class="stitle">Banco Central — db_apptemplate</div><div class="ssub">6 tabelas — amarelo = auditoria básica · laranja = cancelamento · verde = campos novos</div></div>
+    </div>
+    <div class="tgrid">
+
+      <!-- usuarios -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--blue)"></div><div class="tname">usuarios</div><div class="ttag">quem acessa</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 uk">UK</span><span class="fn2">email</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">nome</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">senha_hash</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">foto_url</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">telefone</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">is_admin</span><span class="ft">boolean</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ativo</span><span class="ft">boolean</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ultimo_acesso</span><span class="ft">timestamp</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+        </div>
+      </div>
+
+      <!-- apps -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--green)"></div><div class="tname">apps</div><div class="ttag">aplicativos</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 uk">UK</span><span class="fn2">codigo</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">nome</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">descricao</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">icone_url</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">url_base</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">porta</span><span class="ft">integer</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">banco_nome</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ativo</span><span class="ft">boolean</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+        </div>
+      </div>
+
+      <!-- empresas -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--amber)"></div><div class="tname">empresas</div><div class="ttag">clientes do sistema</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 uk">UK</span><span class="fn2">cnpj</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 uk">UK</span><span class="fn2">codigo</span><span class="ft">text</span></div>
+          <div class="tf new"><span class="fk2 uk">UK</span><span class="fn2">codigo_consys</span><span class="ft">text</span><span class="nbadge green">novo</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">razao_social</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">nome_fantasia</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">logo_url</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">email</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">telefone</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ativo</span><span class="ft">boolean</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+        </div>
+      </div>
+
+      <!-- filiais -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--purple)"></div><div class="tname">filiais</div><div class="ttag">unidades</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">empresa_id</span><span class="ft">→ empresas</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">nome</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 uk">UK</span><span class="fn2">cnpj</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">codigo</span><span class="ft">text</span></div>
+          <div class="tf new"><span class="fk2 uk">UK</span><span class="fn2">codigo_consys</span><span class="ft">text</span><span class="nbadge green">novo</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">endereco</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">cidade</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">estado</span><span class="ft">char(2)</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">is_matriz</span><span class="ft">boolean</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ativo</span><span class="ft">boolean</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+        </div>
+      </div>
+
+      <!-- modulos -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--teal)"></div><div class="tname">modulos</div><div class="ttag">funcionalidades</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">app_id</span><span class="ft">→ apps</span></div>
+          <div class="tf"><span class="fk2 uk">UK</span><span class="fn2">codigo</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">nome</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">icone</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">url_rota</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ordem</span><span class="ft">integer</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ativo</span><span class="ft">boolean</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+        </div>
+      </div>
+
+      <!-- permissoes -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--red)"></div><div class="tname">permissoes</div><div class="ttag">controle de acesso</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">usuario_id</span><span class="ft">→ usuarios</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">app_id</span><span class="ft">→ apps</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">empresa_id</span><span class="ft">→ empresas</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">filial_id</span><span class="ft">→ filiais (NULL=todas)</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">modulo_id</span><span class="ft">→ modulos (NULL=todos)</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">perfil</span><span class="ft">admin/editor/view</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">pode_incluir</span><span class="ft">boolean</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">pode_alterar</span><span class="ft">boolean</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">pode_excluir</span><span class="ft">boolean</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">pode_exportar</span><span class="ft">boolean</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+        </div>
+      </div>
+
+      <!-- clientes (exemplo tabela de dados) -->
+      <div class="tcard">
+        <div class="thead3"><div class="tdot" style="background:var(--teal)"></div><div class="tname">clientes</div><div class="ttag">dados dos clientes</div></div>
+        <div class="tfields">
+          <div class="tf"><span class="fk2 pk">PK</span><span class="fn2">id</span><span class="ft">uuid</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">empresa_id</span><span class="ft">→ empresas</span></div>
+          <div class="tf"><span class="fk2 fk">FK</span><span class="fn2">filial_id</span><span class="ft">→ filiais</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">nome</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">email</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">telefone</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">cidade</span><span class="ft">text</span></div>
+          <div class="tf"><span class="fk2 __">  </span><span class="fn2">ativo</span><span class="ft">boolean</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">criado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">criado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 __">  </span><span class="fn2">alterado_em</span><span class="ft">timestamp</span><span class="nbadge amber">aud</span></div>
+          <div class="tf aud"><span class="fk2 fk">FK</span><span class="fn2">alterado_por</span><span class="ft">→ usuarios</span><span class="nbadge amber">aud</span></div>
+          <div class="tf cancel"><span class="fk2 __">  </span><span class="fn2">cancelado_em</span><span class="ft">timestamp</span><span class="nbadge orange">cancel</span></div>
+          <div class="tf cancel"><span class="fk2 fk">FK</span><span class="fn2">cancelado_por</span><span class="ft">→ usuarios</span><span class="nbadge orange">cancel</span></div>
+          <div class="tf cancel"><span class="fk2 __">  </span><span class="fn2">motivo_cancelamento</span><span class="ft">text</span><span class="nbadge orange">cancel</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="ldot" style="background:#1d4ed8"></div>PK — Chave Primária</div>
+      <div class="legend-item"><div class="ldot" style="background:#b45309"></div>FK — Chave Estrangeira</div>
+      <div class="legend-item"><div class="ldot" style="background:#166534"></div>UK — Valor Único</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--amber)"></div>aud — auditoria básica</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--orange)"></div>cancel — cancelamento</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--green)"></div>novo — campo desta versão</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 06 APPS -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:var(--teal)">06</div>
+      <div><div class="stitle">Aplicativos e Bancos de Dados</div><div class="ssub">Cada app roda independente na sua porta com banco PostgreSQL próprio</div></div>
+    </div>
+    <div class="agrid">
+      <div class="acard ac-bl"><div class="aicon2">📊</div><div class="aname2">pgweb</div><div class="adb">db_pgweb · :5001</div><div class="amods"><div class="amod"><div class="amod-dot"></div>Dashboard</div><div class="amod"><div class="amod-dot"></div>Clientes</div><div class="amod"><div class="amod-dot"></div>Relatórios</div><div class="amod"><div class="amod-dot"></div>Upload CSV</div></div></div>
+      <div class="acard ac-gr"><div class="aicon2">💼</div><div class="aname2">gestão</div><div class="adb">db_gestao · :5002</div><div class="amods"><div class="amod"><div class="amod-dot"></div>Vendas</div><div class="amod"><div class="amod-dot"></div>A Receber</div><div class="amod"><div class="amod-dot"></div>A Pagar</div><div class="amod"><div class="amod-dot"></div>Financeiro</div><div class="amod"><div class="amod-dot"></div>Estoque</div></div></div>
+      <div class="acard ac-am"><div class="aicon2">🎟️</div><div class="aname2">ingressos</div><div class="adb">db_ingressos · :5003</div><div class="amods"><div class="amod"><div class="amod-dot"></div>Eventos</div><div class="amod"><div class="amod-dot"></div>Ingressos</div><div class="amod"><div class="amod-dot"></div>Venda Online</div><div class="amod"><div class="amod-dot"></div>Check-in</div></div></div>
+      <div class="acard ac-pu"><div class="aicon2">➕</div><div class="aname2">próximo app</div><div class="adb">db_novo · :5004</div><div class="amods"><div class="amod"><div class="amod-dot"></div>Módulo 1</div><div class="amod"><div class="amod-dot"></div>Módulo 2</div><div class="amod"><div class="amod-dot"></div>Módulo N</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 07 PERMISSÕES -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:var(--red)">07</div>
+      <div><div class="stitle">Controle de Acesso — Exemplos Reais</div><div class="ssub">Um usuário pode visualizar um módulo sem poder incluir ou alterar — controle independente por ação</div></div>
+    </div>
+    <div class="ptable-wrap">
+      <table class="ptable">
+        <thead><tr><th>Usuário</th><th>Módulo</th><th>Empresa / Filial</th><th>Perfil</th><th>Ver</th><th>Incluir</th><th>Alterar</th><th>Excluir</th><th>Exportar</th></tr></thead>
+        <tbody>
+          <tr><td>elton@</td><td>Clientes</td><td>Empresa A · Todas</td><td><span class="badge b-admin">admin</span></td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td>maria@</td><td>Clientes</td><td>Empresa B · Matriz SP</td><td><span class="badge b-editor">editor</span></td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr style="background:#fffbeb"><td><strong>joao@</strong></td><td><strong>Financeiro</strong></td><td><strong>Empresa A · Filial RJ</strong></td><td><span class="badge b-view">view</span></td><td class="ok">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>joao@</td><td>Vendas</td><td>Empresa A · Filial RJ</td><td><span class="badge b-none">sem acesso</span></td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>ana@</td><td>Todos</td><td>Empresa C · Todas</td><td><span class="badge b-editor">editor</span></td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="no">—</td><td class="ok">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-box">
+      <div class="box-icon">💡</div>
+      <div class="box-text"><strong>joao@ · Financeiro · view:</strong> visualiza os dados normalmente, mas os botões "Novo", "Editar" e "Excluir" ficam ocultos. O backend também bloqueia qualquer escrita direta via URL.</div>
+    </div>
+    <div class="perm-detail">
+      <div class="pdet-card"><div class="pdet-header"><span class="badge b-admin">admin</span></div><div class="pdet-body"><div class="pdet-row"><span class="pdet-label">Visualizar</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Incluir</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Alterar</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Excluir</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Exportar</span><span class="pdet-val yes">✓ sim</span></div></div></div>
+      <div class="pdet-card"><div class="pdet-header"><span class="badge b-editor">editor</span></div><div class="pdet-body"><div class="pdet-row"><span class="pdet-label">Visualizar</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Incluir</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Alterar</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Excluir</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Exportar</span><span class="pdet-val noo">— não</span></div></div></div>
+      <div class="pdet-card"><div class="pdet-header"><span class="badge b-view">view</span></div><div class="pdet-body"><div class="pdet-row"><span class="pdet-label">Visualizar</span><span class="pdet-val yes">✓ sim</span></div><div class="pdet-row"><span class="pdet-label">Incluir</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Alterar</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Excluir</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Exportar</span><span class="pdet-val noo">— não</span></div></div></div>
+      <div class="pdet-card"><div class="pdet-header"><span class="badge b-none">sem acesso</span></div><div class="pdet-body"><div class="pdet-row"><span class="pdet-label">Visualizar</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Incluir</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Alterar</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Excluir</span><span class="pdet-val noo">— não</span></div><div class="pdet-row"><span class="pdet-label">Exportar</span><span class="pdet-val noo">— não</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 08 SQL -->
+  <div class="section">
+    <div class="sh">
+      <div class="snum" style="background:#0f172a">08</div>
+      <div><div class="stitle">SQL — Script Completo v1.2</div><div class="ssub">Execute no pgAdmin no banco db_apptemplate — campos de auditoria destacados</div></div>
+    </div>
+    <div class="sql-wrap">
+      <div class="sql-bar">
+        <div class="sql-dot2" style="background:#ff5f56"></div>
+        <div class="sql-dot2" style="background:#ffbd2e"></div>
+        <div class="sql-dot2" style="background:#27c93f"></div>
+        <div class="sql-fn">db_apptemplate.sql · v1.2</div>
+      </div>
+      <pre><span class="cm">-- ================================================
+-- db_apptemplate · Schema Completo v1.2
+-- AppTemplate · Sistema Multi-App Multi-Empresa
+-- Inclui: auditoria tipo 1, codigo_consys, cancelamento
+-- ================================================</span>
+
+<span class="cm">-- 1. USUÁRIOS</span>
+<span class="kw">CREATE TABLE</span> usuarios (
+  id            <span class="tp">UUID</span>      <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  email         <span class="tp">TEXT</span>      <span class="kw">UNIQUE NOT NULL</span>,
+  nome          <span class="tp">TEXT</span>      <span class="kw">NOT NULL</span>,
+  senha_hash    <span class="tp">TEXT</span>      <span class="kw">NOT NULL</span>,
+  foto_url      <span class="tp">TEXT</span>,
+  telefone      <span class="tp">TEXT</span>,
+  is_admin      <span class="tp">BOOLEAN</span>   <span class="kw">DEFAULT</span> <span class="st">false</span>,
+  ativo         <span class="tp">BOOLEAN</span>   <span class="kw">DEFAULT</span> <span class="st">true</span>,
+  ultimo_acesso <span class="tp">TIMESTAMP</span>,
+  <span class="hl">criado_em     <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por    <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em   <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por  <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id)</span>
+);
+
+<span class="cm">-- 2. APPS</span>
+<span class="kw">CREATE TABLE</span> apps (
+  id         <span class="tp">UUID</span>    <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  codigo     <span class="tp">TEXT</span>    <span class="kw">UNIQUE NOT NULL</span>,
+  nome       <span class="tp">TEXT</span>    <span class="kw">NOT NULL</span>,
+  descricao  <span class="tp">TEXT</span>,
+  icone_url  <span class="tp">TEXT</span>,
+  url_base   <span class="tp">TEXT</span>,
+  porta      <span class="tp">INTEGER</span>,
+  banco_nome <span class="tp">TEXT</span>,
+  ativo      <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">true</span>,
+  <span class="hl">criado_em    <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por   <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em  <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id)</span>
+);
+
+<span class="cm">-- 3. EMPRESAS</span>
+<span class="kw">CREATE TABLE</span> empresas (
+  id             <span class="tp">UUID</span>      <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  cnpj           <span class="tp">TEXT</span>      <span class="kw">UNIQUE</span>,
+  codigo         <span class="tp">TEXT</span>      <span class="kw">UNIQUE NOT NULL</span>,
+  codigo_consys  <span class="tp">TEXT</span>      <span class="kw">UNIQUE</span>,
+  razao_social   <span class="tp">TEXT</span>      <span class="kw">NOT NULL</span>,
+  nome_fantasia  <span class="tp">TEXT</span>,
+  logo_url       <span class="tp">TEXT</span>,
+  email          <span class="tp">TEXT</span>,
+  telefone       <span class="tp">TEXT</span>,
+  ativo          <span class="tp">BOOLEAN</span>   <span class="kw">DEFAULT</span> <span class="st">true</span>,
+  <span class="hl">criado_em      <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por     <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em    <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por   <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id)</span>
+);
+
+<span class="cm">-- 4. FILIAIS</span>
+<span class="kw">CREATE TABLE</span> filiais (
+  id            <span class="tp">UUID</span>    <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  empresa_id    <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> empresas(id),
+  nome          <span class="tp">TEXT</span>    <span class="kw">NOT NULL</span>,
+  cnpj          <span class="tp">TEXT</span>    <span class="kw">UNIQUE</span>,
+  codigo        <span class="tp">TEXT</span>,
+  codigo_consys <span class="tp">TEXT</span>    <span class="kw">UNIQUE</span>,
+  endereco      <span class="tp">TEXT</span>,
+  cidade        <span class="tp">TEXT</span>,
+  estado        <span class="tp">CHAR(2)</span>,
+  is_matriz     <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">false</span>,
+  ativo         <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">true</span>,
+  <span class="hl">criado_em     <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por    <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em   <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por  <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id)</span>
+);
+
+<span class="cm">-- 5. MÓDULOS</span>
+<span class="kw">CREATE TABLE</span> modulos (
+  id       <span class="tp">UUID</span>    <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  app_id   <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> apps(id),
+  codigo   <span class="tp">TEXT</span>    <span class="kw">UNIQUE NOT NULL</span>,
+  nome     <span class="tp">TEXT</span>    <span class="kw">NOT NULL</span>,
+  icone    <span class="tp">TEXT</span>,
+  url_rota <span class="tp">TEXT</span>,
+  ordem    <span class="tp">INTEGER</span> <span class="kw">DEFAULT</span> 0,
+  ativo    <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">true</span>,
+  <span class="hl">criado_em     <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por    <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em   <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por  <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id)</span>
+);
+
+<span class="cm">-- 6. PERMISSÕES</span>
+<span class="kw">CREATE TABLE</span> permissoes (
+  id            <span class="tp">UUID</span>    <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  usuario_id    <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> usuarios(id),
+  app_id        <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> apps(id),
+  empresa_id    <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> empresas(id),
+  filial_id     <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> filiais(id),  <span class="cm">-- NULL = todas</span>
+  modulo_id     <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> modulos(id),  <span class="cm">-- NULL = todos</span>
+  perfil        <span class="tp">TEXT</span>    <span class="kw">DEFAULT</span> <span class="st">'view'</span>,
+  pode_incluir  <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">false</span>,
+  pode_alterar  <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">false</span>,
+  pode_excluir  <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">false</span>,
+  pode_exportar <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">false</span>,
+  <span class="hl">criado_em     <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por    <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em   <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por  <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="kw">UNIQUE</span>(usuario_id, app_id, empresa_id, filial_id, modulo_id)
+);
+
+<span class="cm">-- 7. CLIENTES (exemplo tabela de dados com cancelamento)
+--    Padrão a ser seguido por todas as tabelas de negócio</span>
+<span class="kw">CREATE TABLE</span> clientes (
+  id         <span class="tp">UUID</span>    <span class="kw">DEFAULT</span> <span class="fn">gen_random_uuid()</span> <span class="kw">PRIMARY KEY</span>,
+  empresa_id <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> empresas(id),
+  filial_id  <span class="tp">UUID</span>    <span class="kw">REFERENCES</span> filiais(id),
+  nome       <span class="tp">TEXT</span>    <span class="kw">NOT NULL</span>,
+  email      <span class="tp">TEXT</span>,
+  telefone   <span class="tp">TEXT</span>,
+  cidade     <span class="tp">TEXT</span>,
+  ativo      <span class="tp">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="st">true</span>,
+  <span class="hl">criado_em              <span class="tp">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fn">now()</span>,</span>
+  <span class="hl">criado_por             <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl">alterado_em            <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl">alterado_por           <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl2">cancelado_em           <span class="tp">TIMESTAMP</span>,</span>
+  <span class="hl2">cancelado_por          <span class="tp">UUID</span>      <span class="kw">REFERENCES</span> usuarios(id),</span>
+  <span class="hl2">motivo_cancelamento    <span class="tp">TEXT</span></span>
+);
+
+<span class="cm">-- ================================================
+-- DADOS INICIAIS
+-- ================================================</span>
+
+<span class="kw">INSERT INTO</span> apps (codigo, nome, descricao, porta, banco_nome) <span class="kw">VALUES</span>
+  (<span class="st">'pgweb'</span>,     <span class="st">'pgweb'</span>,     <span class="st">'Dashboard de clientes'</span>,  5001, <span class="st">'db_pgweb'</span>),
+  (<span class="st">'gestao'</span>,    <span class="st">'Gestão'</span>,    <span class="st">'ERP financeiro'</span>,          5002, <span class="st">'db_gestao'</span>),
+  (<span class="st">'ingressos'</span>, <span class="st">'Ingressos'</span>, <span class="st">'Venda de ingressos'</span>,       5003, <span class="st">'db_ingressos'</span>);
+
+<span class="cm">-- Gerar senha_hash via Python: bcrypt.hashpw('Trocar123!'.encode(), bcrypt.gensalt())</span>
+<span class="kw">INSERT INTO</span> usuarios (email, nome, senha_hash, is_admin) <span class="kw">VALUES</span>
+  (<span class="st">'admin@apptemplate.com'</span>, <span class="st">'Administrador'</span>, <span class="st">'$2b$12$...'</span>, <span class="st">true</span>);</pre>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

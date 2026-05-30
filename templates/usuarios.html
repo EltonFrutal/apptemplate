@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Usuários{% endblock %}
+{% block topbar_title %}Usuários{% endblock %}
+{% block topbar_right %}
+<button class="btn btn-primary" onclick="novoUsuario()">+ Novo usuário</button>
+{% endblock %}
+
+{% block content %}
+<div class="table-card">
+  <div class="table-toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Buscar por nome ou email...">
+    </div>
+    <button class="btn btn-ghost" onclick="carregar()">↺ Atualizar</button>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Nome</th><th>Email</th><th>Telefone</th>
+      <th>Admin</th><th>Status</th><th>Último acesso</th><th></th>
+    </tr></thead>
+    <tbody id="tbody">
+      <tr><td colspan="7"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal" onclick="if(event.target===this)fecharModal('modal')">
+  <div class="modal">
+    <div class="modal-title" id="modal-titulo">Novo usuário</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" id="f-nome" placeholder="Nome completo">
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="f-email" placeholder="email@exemplo.com">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="tel" id="f-telefone" placeholder="(00) 00000-0000">
+      </div>
+      <div class="form-group">
+        <label>Senha <span id="senha-hint" style="font-weight:400;color:var(--text3)">(deixe em branco para manter)</span></label>
+        <input type="password" id="f-senha" placeholder="••••••••">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="f-admin"> Administrador do sistema</label>
+        <label class="check-item"><input type="checkbox" id="f-ativo" checked> Usuário ativo</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvar()">Salvar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let todos=[]
+
+async function carregar(){
+  const tbody=document.getElementById('tbody')
+  tbody.innerHTML='<tr><td colspan="7"><div class="state-box"><div class="state-icon">⟳</div><p>carregando...</p></div></td></tr>'
+  const res=await fetch('/api/usuarios')
+  todos=await res.json()
+  render(todos)
+}
+
+function render(lista){
+  const tbody=document.getElementById('tbody')
+  if(!lista.length){tbody.innerHTML='<tr><td colspan="7"><div class="state-box"><div class="state-icon">👤</div><p>Nenhum usuário encontrado.</p></div></td></tr>';return}
+  tbody.innerHTML=lista.map(u=>`<tr>
+    <td style="font-weight:600">${esc(u.nome)}</td>
+    <td class="td-mono">${esc(u.email)}</td>
+    <td class="td-mono">${esc(u.telefone||'—')}</td>
+    <td>${u.is_admin?'<span class="badge blue">admin</span>':'<span class="badge gray">user</span>'}</td>
+    <td>${u.ativo?'<span class="badge green">ativo</span>':'<span class="badge red">inativo</span>'}</td>
+    <td class="td-mono" style="font-size:12px;color:var(--text3)">${fmt(u.ultimo_acesso)}</td>
+    <td><div class="td-actions">
+      <button class="btn btn-sm btn-edit" onclick="editar('${u.id}')">editar</button>
+      <button class="btn btn-sm btn-del"  onclick="excluir('${u.id}','${esc(u.nome)}')">excluir</button>
+    </div></td>
+  </tr>`).join('')
+}
+
+document.getElementById('search').addEventListener('input',function(){
+  const q=this.value.toLowerCase()
+  render(todos.filter(u=>(u.nome||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)))
+})
+
+function novoUsuario(){
+  document.getElementById('edit-id').value=''
+  document.getElementById('f-nome').value=''
+  document.getElementById('f-email').value=''
+  document.getElementById('f-telefone').value=''
+  document.getElementById('f-senha').value=''
+  document.getElementById('f-admin').checked=false
+  document.getElementById('f-ativo').checked=true
+  document.getElementById('modal-titulo').textContent='Novo usuário'
+  document.getElementById('senha-hint').textContent='(obrigatória)'
+  abrirModal('modal')
+  setTimeout(()=>document.getElementById('f-nome').focus(),100)
+}
+
+function editar(id){
+  const u=todos.find(x=>x.id===id)
+  if(!u)return
+  document.getElementById('edit-id').value=u.id
+  document.getElementById('f-nome').value=u.nome||''
+  document.getElementById('f-email').value=u.email||''
+  document.getElementById('f-telefone').value=u.telefone||''
+  document.getElementById('f-senha').value=''
+  document.getElementById('f-admin').checked=u.is_admin
+  document.getElementById('f-ativo').checked=u.ativo
+  document.getElementById('modal-titulo').textContent='Editar usuário'
+  document.getElementById('senha-hint').textContent='(deixe em branco para manter)'
+  abrirModal('modal')
+}
+
+async function salvar(){
+  const id=document.getElementById('edit-id').value
+  const dados={
+    nome:document.getElementById('f-nome').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    telefone:document.getElementById('f-telefone').value.trim()||null,
+    senha:document.getElementById('f-senha').value||null,
+    is_admin:document.getElementById('f-admin').checked,
+    ativo:document.getElementById('f-ativo').checked,
+  }
+  if(!dados.nome||!dados.email){toast('Nome e email são obrigatórios','error');return}
+  if(!id&&!dados.senha){toast('Senha obrigatória para novo usuário','error');return}
+  const res=await fetch(id?`/api/usuarios/${id}`:'/api/usuarios',{
+    method:id?'PUT':'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(dados)
+  })
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  fecharModal('modal')
+  toast(id?'Usuário atualizado!':'Usuário cadastrado!')
+  carregar()
+}
+
+async function excluir(id,nome){
+  if(!confirm(`Desativar "${nome}"?`))return
+  const res=await fetch(`/api/usuarios/${id}`,{method:'DELETE'})
+  const r=await res.json()
+  if(r.erro){toast(r.erro,'error');return}
+  toast('Usuário desativado!')
+  carregar()
+}
+
+carregar()
+</script>
+{% endblock %}
